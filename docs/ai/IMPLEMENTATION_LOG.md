@@ -224,3 +224,43 @@ Append one entry after each completed implementation task that changes code or d
 
 **Remaining notes:**
 - `AGENTS.md` currently has an unrelated unstaged local change that was not part of this backfill.
+
+## 2026-06-08 - Phase 2 Repository Hardening
+
+**Actor:** Quan / AI-assisted
+
+**Prompt summary:** Harden repository behavior before Phase 3 so repository return shapes and data-access helpers better match `Snevo-reference`.
+
+**Implemented:**
+- Aligned product listing, detail, reviews, rating summary, soft delete, and restore metadata behavior in `ShoeRepository`.
+- Hardened stock update operations with `increment`, `decrement`, `add`, `subtract`, and `set` aliases while clamping subtract/decrement to zero.
+- Added duplicate-safe variant bulk creation and variant generation with `created/skipped` response metadata.
+- Restored admin order list, order detail, payment parsing, address attach, and cart summary return shapes closer to the reference project.
+- Added query-first helper methods for category name uniqueness and review purchase lookup while keeping old boolean wrappers for compatibility.
+
+**Architecture impact:**
+- Kept repository methods focused on database reads/writes and compatibility query helpers.
+- Reduced Phase 3 service risk by making product, order, cart, stock, and variant query behavior closer to the reference data-access layer.
+- Clarified that services still own validation, eligibility decisions, checkout orchestration, and final business rules.
+
+**Files changed:**
+- `backend/data/repositories/ShoeRepository.js`
+- `backend/data/repositories/ShoeVariantRepository.js`
+- `backend/data/repositories/OrderRepository.js`
+- `backend/data/repositories/CartRepository.js`
+- `backend/data/repositories/CategoryRepository.js`
+- `backend/data/repositories/ReviewRepository.js`
+- `docs/ai/IMPLEMENTATION_LOG.md`
+- `docs/ai/REPORT_NOTES.md`
+- `docs/ai/PHASE_STATUS.md`
+
+**Verification:**
+- Ran repository import smoke checks.
+- Instantiated `ShoeRepository` without Supabase credentials.
+- Ran static behavior checks for pagination, stock info, rating distribution, stock clamping, variant skipped metadata, parsed payments, and cart totals.
+- Ran repository layer-rule and import whitelist checks.
+- Ran `npm test`.
+- Ran `npm start` and confirmed it still fails because `backend/server.js` is intentionally not implemented until Phase 5.
+
+**Remaining notes:**
+- Full app behavior equivalence remains impossible until Phase 3-5 add services, presentation/routes, server bootstrap, frontend/static files, schema, and scripts.
