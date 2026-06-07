@@ -124,11 +124,16 @@ export default class CartRepository extends BaseRepository {
     const subtotal = items.reduce((sum, item) => {
       return sum + Number(item.price_at_add || 0) * Number(item.quantity || 0);
     }, 0);
+    const shipping_cost = 0;
+    const tax_amount = 0;
+    const total_amount = subtotal + shipping_cost + tax_amount;
 
     return {
-      items,
-      item_count: items.length,
-      subtotal
+      subtotal,
+      shipping_cost,
+      tax_amount,
+      total_amount,
+      item_count: items.length
     };
   }
 }
