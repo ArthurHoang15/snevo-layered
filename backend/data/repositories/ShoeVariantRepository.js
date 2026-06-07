@@ -63,11 +63,12 @@ export default class ShoeVariantRepository extends BaseRepository {
         .single();
       if (findError) throw new DatabaseError('Failed to find variant stock', findError);
       const currentStock = Number(variant.stock_quantity || 0);
-      const stockQuantity = operation === 'increment'
-        ? currentStock + quantity
-        : operation === 'decrement'
-          ? currentStock - quantity
-          : quantity;
+      const amount = Number(quantity || 0);
+      const stockQuantity = operation === 'increment' || operation === 'add'
+        ? currentStock + amount
+        : operation === 'decrement' || operation === 'subtract'
+          ? Math.max(0, currentStock - amount)
+          : amount;
       const { data, error } = await this.db
         .from(this.tableName)
         .update({ stock_quantity: stockQuantity })
@@ -111,9 +112,31 @@ export default class ShoeVariantRepository extends BaseRepository {
 
   async bulkCreate(variantsData) {
     try {
+      const variants = (variantsData || []).map((item) => this.cleanData(item));
+      if (variants.length === 0) return [];
+
+      const shoeIds = [...new Set(variants.map((variant) => variant.shoe_id).filter(Boolean))];
+      const { data: existingVariants, error: existingError } = await this.db
+        .from(this.tableName)
+        .select('shoe_id, color_id, size_id')
+        .in('shoe_id', shoeIds);
+      if (existingError) throw new DatabaseError('Failed to check existing variants', existingError);
+
+      const existingSet = new Set(
+        (existingVariants || []).map((variant) => `${variant.shoe_id}-${variant.color_id}-${variant.size_id}`)
+      );
+      const variantsToCreate = variants.filter((variant) => {
+        const key = `${variant.shoe_id}-${variant.color_id}-${variant.size_id}`;
+        if (existingSet.has(key)) return false;
+        existingSet.add(key);
+        return true;
+      });
+
+      if (variantsToCreate.length === 0) return [];
+
       const { data, error } = await this.db
         .from(this.tableName)
-        .insert(variantsData.map((item) => this.cleanData(item)))
+        .insert(variantsToCreate)
         .select();
       if (error) throw new DatabaseError('Failed to bulk create variants', error);
       return data || [];
@@ -140,21 +163,43 @@ export default class ShoeVariantRepository extends BaseRepository {
       if (colorError) throw new DatabaseError('Failed to find colors', colorError);
       const { data: sizes, error: sizeError } = await this.db.from('sizes').select('size_id').eq('is_active', true);
       if (sizeError) throw new DatabaseError('Failed to find sizes', sizeError);
+      const { data: existingVariants, error: existingError } = await this.db
+        .from(this.tableName)
+        .select('color_id, size_id')
+        .eq('shoe_id', shoeId);
+      if (existingError) throw new DatabaseError('Failed to check existing variants', existingError);
+
+      const existingSet = new Set((existingVariants || []).map((variant) => `${variant.color_id}-${variant.size_id}`));
+      const skipped = [];
       const variants = [];
+      const defaultStock = options.defaultStock ?? options.stock_quantity ?? 0;
+      const defaultPrice = options.defaultPrice ?? options.price_adjustment;
       for (const color of colors || []) {
         for (const size of sizes || []) {
+          const key = `${color.color_id}-${size.size_id}`;
+          if (existingSet.has(key)) {
+            skipped.push({ color_id: color.color_id, size_id: size.size_id });
+            continue;
+          }
           variants.push({
             shoe_id: shoeId,
             color_id: color.color_id,
             size_id: size.size_id,
             sku: this.generateSKU(shoe.shoe_name, color.color_id, size.size_id),
-            stock_quantity: options.stock_quantity ?? 0,
-            price_adjustment: options.price_adjustment ?? 0,
+            stock_quantity: defaultStock,
+            variant_price: defaultPrice,
             is_active: true
           });
         }
       }
-      return this.bulkCreate(variants);
+      const createdVariants = await this.bulkCreate(variants);
+      return {
+        success: true,
+        message: createdVariants.length > 0 ? `Created ${createdVariants.length} variants` : 'All variants already exist',
+        created: createdVariants.length,
+        skipped: skipped.length,
+        variants: createdVariants
+      };
     } catch (error) {
       if (error instanceof DatabaseError) throw error;
       throw new DatabaseError(`Generate all variants failed: ${error.message}`, error);
@@ -163,23 +208,45 @@ export default class ShoeVariantRepository extends BaseRepository {
 
   async generateSpecificVariants(shoeId, colorIds, sizeIds, options = {}) {
     try {
-      const { data: shoe, error: shoeError } = await this.db.from('shoes').select('shoe_name').eq('shoe_id', shoeId).single();
+      const { data: shoe, error: shoeError } = await this.db.from('shoes').select('shoe_name, base_price').eq('shoe_id', shoeId).single();
       if (shoeError) throw new DatabaseError('Failed to find shoe', shoeError);
+      const { data: existingVariants, error: existingError } = await this.db
+        .from(this.tableName)
+        .select('color_id, size_id')
+        .eq('shoe_id', shoeId);
+      if (existingError) throw new DatabaseError('Failed to check existing variants', existingError);
+
+      const existingSet = new Set((existingVariants || []).map((variant) => `${variant.color_id}-${variant.size_id}`));
+      const skipped = [];
       const variants = [];
+      const defaultStock = options.defaultStock ?? options.stock_quantity ?? 0;
+      const defaultPrice = options.defaultPrice ?? options.price_adjustment ?? shoe.base_price;
       for (const colorId of colorIds || []) {
         for (const sizeId of sizeIds || []) {
+          const key = `${colorId}-${sizeId}`;
+          if (existingSet.has(key)) {
+            skipped.push({ color_id: colorId, size_id: sizeId });
+            continue;
+          }
           variants.push({
             shoe_id: shoeId,
             color_id: colorId,
             size_id: sizeId,
             sku: this.generateSKU(shoe.shoe_name, colorId, sizeId),
-            stock_quantity: options.stock_quantity ?? 0,
-            price_adjustment: options.price_adjustment ?? 0,
+            stock_quantity: defaultStock,
+            variant_price: defaultPrice,
             is_active: true
           });
         }
       }
-      return this.bulkCreate(variants);
+      const createdVariants = await this.bulkCreate(variants);
+      return {
+        success: true,
+        message: createdVariants.length > 0 ? `Created ${createdVariants.length} variants` : 'All selected variants already exist',
+        created: createdVariants.length,
+        skipped: skipped.length,
+        variants: createdVariants
+      };
     } catch (error) {
       if (error instanceof DatabaseError) throw error;
       throw new DatabaseError(`Generate specific variants failed: ${error.message}`, error);
