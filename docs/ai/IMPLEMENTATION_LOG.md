@@ -35,6 +35,29 @@ Append one entry after each completed implementation task that changes code or d
 **Remaining notes:**
 - Infrastructure implementation was left for Phase 1.
 
+## 2026-06-07 - Gitignore Cleanup
+
+**Actor:** Quan / AI-assisted
+
+**Prompt summary:** Update ignore rules so local planning notes do not accidentally enter commit history.
+
+**Implemented:**
+- Changed `.gitignore` so `REFACTOR_TEAM_PLAN.md` is ignored.
+- Kept `AGENTS.md` ignored at this point because the AI workflow docs had not been committed yet.
+
+**Architecture impact:**
+- No backend architecture or application behavior changed.
+- Reduced risk of committing local planning files before the shared docs structure existed.
+
+**Files changed:**
+- `.gitignore`
+
+**Verification:**
+- Reviewed commit `2bb1344 chore: update gitignore`.
+
+**Remaining notes:**
+- Later AI workflow documentation removed `AGENTS.md` from `.gitignore` so shared agent rules could be committed.
+
 ## 2026-06-07 - Phase 1 Infrastructure
 
 **Actor:** Quan / AI-assisted
@@ -175,3 +198,29 @@ Append one entry after each completed implementation task that changes code or d
 
 **Remaining notes:**
 - Service layer still needs to be created in Phase 3.
+
+## 2026-06-07 - Implementation Log Backfill Audit
+
+**Actor:** AI-assisted
+
+**Prompt summary:** Check old commits and update documentation for any completed implementation work not yet captured by `docs/ai/IMPLEMENTATION_LOG.md`.
+
+**Implemented:**
+- Compared chronological Git history against existing implementation log entries.
+- Backfilled the missing `chore: update gitignore` commit as a standalone log entry.
+- Confirmed merge commit `33724f0` does not need a separate implementation entry because it only merged already logged infrastructure/docs commits.
+
+**Architecture impact:**
+- No backend architecture or application behavior changed.
+- Improved traceability between commit history and report-ready implementation notes.
+
+**Files changed:**
+- `docs/ai/IMPLEMENTATION_LOG.md`
+
+**Verification:**
+- Reviewed `git log --reverse --name-status`.
+- Reviewed `git show 2bb1344 -- .gitignore`.
+- Reviewed `git show 33724f0`.
+
+**Remaining notes:**
+- `AGENTS.md` currently has an unrelated unstaged local change that was not part of this backfill.
