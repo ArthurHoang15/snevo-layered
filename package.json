@@ -1,0 +1,24 @@
+{
+  "name": "snevo-layered",
+  "version": "1.0.0",
+  "description": "Snevo e-commerce refactor using layered architecture",
+  "main": "backend/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "node --watch backend/server.js",
+    "test": "node --test"
+  },
+  "keywords": [
+    "ecommerce",
+    "snevo",
+    "layered-architecture",
+    "nodejs",
+    "supabase"
+  ],
+  "author": "Snevo Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
