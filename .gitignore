@@ -149,7 +149,6 @@ config/local.json
 
 openspec/
 
-AGENTS.md
 .serena/
 REFACTOR_TEAM_PLAN.md
 

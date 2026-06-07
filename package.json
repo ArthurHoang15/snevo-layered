@@ -18,6 +18,9 @@
   ],
   "author": "Snevo Team",
   "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.38.0"
+  },
   "engines": {
     "node": ">=18.0.0"
   }
