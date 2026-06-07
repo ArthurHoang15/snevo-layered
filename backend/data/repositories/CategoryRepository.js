@@ -79,16 +79,26 @@ export default class CategoryRepository extends BaseRepository {
     }
   }
 
-  async validateUniqueName(categoryName, excludeCategoryId = null) {
+  async findByNameForUniqueness(categoryName, excludeCategoryId = null) {
     try {
       let query = this.db
         .from(this.tableName)
-        .select('category_id')
+        .select('category_id, category_name')
         .eq('category_name', categoryName);
       if (excludeCategoryId) query = query.neq('category_id', excludeCategoryId);
       const { data, error } = await query.maybeSingle();
       if (error) throw new DatabaseError('Failed to check category name uniqueness', error);
-      return !data;
+      return data || null;
+    } catch (error) {
+      if (error instanceof DatabaseError) throw error;
+      throw new DatabaseError(`Find category by name for uniqueness failed: ${error.message}`, error);
+    }
+  }
+
+  async validateUniqueName(categoryName, excludeCategoryId = null) {
+    try {
+      const existing = await this.findByNameForUniqueness(categoryName, excludeCategoryId);
+      return !existing;
     } catch (error) {
       if (error instanceof DatabaseError) throw error;
       throw new DatabaseError(`Validate unique category name failed: ${error.message}`, error);
