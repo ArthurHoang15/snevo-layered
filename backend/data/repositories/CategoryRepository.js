@@ -94,14 +94,4 @@ export default class CategoryRepository extends BaseRepository {
       throw new DatabaseError(`Find category by name for uniqueness failed: ${error.message}`, error);
     }
   }
-
-  async validateUniqueName(categoryName, excludeCategoryId = null) {
-    try {
-      const existing = await this.findByNameForUniqueness(categoryName, excludeCategoryId);
-      return !existing;
-    } catch (error) {
-      if (error instanceof DatabaseError) throw error;
-      throw new DatabaseError(`Validate unique category name failed: ${error.message}`, error);
-    }
-  }
 }

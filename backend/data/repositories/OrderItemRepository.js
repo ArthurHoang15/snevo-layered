@@ -24,20 +24,13 @@ export default class OrderItemRepository extends BaseRepository {
     return this.find({ variant_id: variantId });
   }
 
-  async calculateSubtotal(orderItemId) {
-    const item = await this.findById(orderItemId);
-    if (!item) return 0;
-    return Number(item.quantity || 0) * Number(item.unit_price || 0);
-  }
-
   async insertItems(orderId, items) {
     try {
       const payload = items.map((item) => this.cleanData({
         order_id: orderId,
         variant_id: item.variant_id,
         quantity: item.quantity,
-        unit_price: item.unit_price ?? item.price_at_add,
-        subtotal: item.subtotal ?? Number(item.quantity || 0) * Number(item.unit_price ?? (item.price_at_add || 0))
+        price_per_unit: item.price_per_unit ?? item.price_at_add
       }));
       const { data, error } = await this.db
         .from(this.tableName)

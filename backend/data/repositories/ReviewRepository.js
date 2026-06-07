@@ -6,29 +6,22 @@ export default class ReviewRepository extends BaseRepository {
     super('reviews', 'review_id');
   }
 
-  async findPurchasedOrderItems(userId, shoeId) {
+  async findPurchasedOrderItems(userId, shoeId, statuses = []) {
     try {
-      const { data, error } = await this.db
+      let query = this.db
         .from('order_items')
         .select('order_id, shoe_variants!inner(shoe_id), orders!inner(user_id, status)')
         .eq('shoe_variants.shoe_id', shoeId)
-        .eq('orders.user_id', userId)
-        .in('orders.status', ['processing', 'shipped', 'delivered']);
+        .eq('orders.user_id', userId);
+      if (statuses.length > 0) {
+        query = query.in('orders.status', statuses);
+      }
+      const { data, error } = await query;
       if (error) throw new DatabaseError('Failed to verify purchase', error);
       return data || [];
     } catch (error) {
       if (error instanceof DatabaseError) throw error;
       throw new DatabaseError(`Find purchased order items failed: ${error.message}`, error);
-    }
-  }
-
-  async verifyPurchase(userId, shoeId) {
-    try {
-      const purchasedItems = await this.findPurchasedOrderItems(userId, shoeId);
-      return purchasedItems.length > 0;
-    } catch (error) {
-      if (error instanceof DatabaseError) throw error;
-      throw new DatabaseError(`Verify purchase failed: ${error.message}`, error);
     }
   }
 

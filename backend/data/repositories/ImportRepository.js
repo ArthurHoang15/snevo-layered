@@ -8,28 +8,38 @@ export default class ImportRepository extends BaseRepository {
 
   async findAllWithDetails(filters = {}, pagination = {}) {
     try {
-      const { page = 1, limit = 20, orderBy = 'created_at', orderDirection = 'desc' } = pagination;
+      const { page = 1, limit = 50, orderBy = 'import_date', orderDirection = 'desc' } = pagination;
       const { variant_id, user_id, shoe_id, from_date, to_date } = filters;
       const offset = (page - 1) * limit;
 
       let query = this.db
         .from(this.tableName)
         .select(`
-          *,
-          profiles(full_name, email),
-          shoe_variants(
-            *,
-            shoes(shoe_id, shoe_name, image_url),
-            colors(color_id, color_name, hex_code),
-            sizes(size_id, size_value, size_type)
+          import_id,
+          supplier_id,
+          user_id,
+          variant_id,
+          quantity_imported,
+          import_price,
+          import_date,
+          notes,
+          created_at,
+          variant:shoe_variants!inner(
+            variant_id,
+            sku,
+            stock_quantity,
+            variant_price,
+            shoe:shoes!inner(shoe_id, shoe_name, image_url),
+            color:colors(color_id, color_name, hex_code),
+            size:sizes(size_id, size_value, size_type)
           )
         `, { count: 'exact' });
 
       if (variant_id) query = query.eq('variant_id', variant_id);
       if (user_id) query = query.eq('user_id', user_id);
-      if (from_date) query = query.gte('created_at', from_date);
-      if (to_date) query = query.lte('created_at', to_date);
-      if (shoe_id) query = query.eq('shoe_variants.shoe_id', shoe_id);
+      if (from_date) query = query.gte('import_date', from_date);
+      if (to_date) query = query.lte('import_date', to_date);
+      if (shoe_id) query = query.eq('variant.shoe_id', shoe_id);
 
       query = query.order(orderBy, { ascending: orderDirection === 'asc' });
       if (limit > 0) query = query.range(offset, offset + limit - 1);
@@ -37,8 +47,23 @@ export default class ImportRepository extends BaseRepository {
       const { data, error, count } = await query;
       if (error) throw new DatabaseError('Failed to fetch imports with details', error);
 
+      let rows = data || [];
+      const userIds = [...new Set(rows.map((item) => item.user_id).filter(Boolean))];
+      if (userIds.length > 0) {
+        const { data: profiles, error: profileError } = await this.db
+          .from('profiles')
+          .select('user_id, username, full_name')
+          .in('user_id', userIds);
+        if (profileError) throw new DatabaseError('Failed to fetch import profiles', profileError);
+        const profileMap = new Map((profiles || []).map((profile) => [profile.user_id, profile]));
+        rows = rows.map((item) => ({
+          ...item,
+          user: profileMap.get(item.user_id) || null
+        }));
+      }
+
       return {
-        data: data || [],
+        data: rows,
         total: count || 0,
         page,
         limit,
@@ -71,10 +96,11 @@ export default class ImportRepository extends BaseRepository {
       const payload = imports.map((item) => this.cleanData({
         variant_id: item.variant_id,
         user_id: userId,
-        quantity: item.quantity,
-        cost_price: item.cost_price,
-        supplier_name: item.supplier_name,
-        notes: item.notes ?? notes
+        supplier_id: item.supplier_id,
+        quantity_imported: item.quantity_imported,
+        import_price: item.import_price,
+        notes: item.notes ?? notes,
+        import_date: item.import_date ?? new Date().toISOString()
       }));
 
       const { data, error } = await this.db
@@ -93,14 +119,15 @@ export default class ImportRepository extends BaseRepository {
     try {
       const result = await this.findAllWithDetails(filters, { page: 1, limit: 0 });
       const rows = result.data || [];
-      const totalQuantity = rows.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+      const totalQuantity = rows.reduce((sum, item) => sum + Number(item.quantity_imported || 0), 0);
       const totalCost = rows.reduce((sum, item) => {
-        return sum + Number(item.quantity || 0) * Number(item.cost_price || 0);
+        return sum + Number(item.quantity_imported || 0) * Number(item.import_price || 0);
       }, 0);
       return {
         total_imports: result.total,
         total_quantity: totalQuantity,
-        total_cost: totalCost
+        total_cost: Number(totalCost.toFixed(2)),
+        average_import_price: totalQuantity > 0 ? Number((totalCost / totalQuantity).toFixed(2)) : 0
       };
     } catch (error) {
       if (error instanceof DatabaseError) throw error;
@@ -117,12 +144,17 @@ export default class ImportRepository extends BaseRepository {
 
       const { error: stockError } = await this.db.rpc('update_variant_stock', {
         p_variant_id: importRecord.variant_id,
-        p_quantity_change: -Number(importRecord.quantity || 0)
+        p_quantity: -Number(importRecord.quantity_imported || 0),
+        p_operation: 'add'
       });
       if (stockError) throw new DatabaseError('Failed to reverse imported stock', stockError);
 
       await this.deleteById(importId);
-      return true;
+      return {
+        success: true,
+        message: 'Import deleted and stock reversed',
+        reversed_quantity: importRecord.quantity_imported
+      };
     } catch (error) {
       if (error instanceof DatabaseError || error instanceof NotFoundError) throw error;
       throw new DatabaseError(`Delete import with stock reverse failed: ${error.message}`, error);

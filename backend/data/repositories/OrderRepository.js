@@ -197,18 +197,18 @@ export default class OrderRepository extends BaseRepository {
     try {
       const { data, error } = await this.db
         .from('order_items')
-        .select('quantity, unit_price')
+        .select('quantity, price_per_unit')
         .eq('order_id', orderId);
       if (error) throw new DatabaseError('Failed to calculate order total', error);
-      return (data || []).reduce((sum, item) => sum + Number(item.quantity || 0) * Number(item.unit_price || 0), 0);
+      return (data || []).reduce((sum, item) => sum + Number(item.quantity || 0) * Number(item.price_per_unit || 0), 0);
     } catch (error) {
       if (error instanceof DatabaseError) throw error;
       throw new DatabaseError(`Calculate order total failed: ${error.message}`, error);
     }
   }
 
-  async createOrder({ user_id, address_id, total_amount, shipping_cost = 0, tax_amount = 0, notes = null }) {
-    return this.create({ user_id, address_id, total_amount, shipping_cost, tax_amount, notes, status: 'pending' });
+  async createOrder({ user_id, address_id, total_amount, shipping_cost = 0, tax_amount = 0, notes = null, status = undefined }) {
+    return this.create({ user_id, address_id, total_amount, shipping_cost, tax_amount, notes, status });
   }
 
   async countAll() {
@@ -220,7 +220,17 @@ export default class OrderRepository extends BaseRepository {
   }
 
   async countApproved() {
-    return this.count({ status: 'processing' });
+    try {
+      const { count, error } = await this.db
+        .from(this.tableName)
+        .select('*', { count: 'exact', head: true })
+        .in('status', ['processing', 'shipped', 'delivered']);
+      if (error) throw new DatabaseError('Failed to count approved orders', error);
+      return count || 0;
+    } catch (error) {
+      if (error instanceof DatabaseError) throw error;
+      throw new DatabaseError(`Count approved orders failed: ${error.message}`, error);
+    }
   }
 
   async countCancelled() {

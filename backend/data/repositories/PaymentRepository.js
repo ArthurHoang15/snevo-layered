@@ -1,5 +1,9 @@
 import BaseRepository from './BaseRepository.js';
 import { DatabaseError } from '../../infrastructure/errors/ErrorClasses.js';
+import {
+  generateMockPaymentDetails,
+  parsePaymentDetails
+} from '../../infrastructure/utils/orderUtils.js';
 
 export default class PaymentRepository extends BaseRepository {
   constructor() {
@@ -24,15 +28,22 @@ export default class PaymentRepository extends BaseRepository {
     return this.updateById(paymentId, updateData);
   }
 
-  async createPayment({ order_id, payment_method, payment_amount, status = 'pending', transaction_id = null, payment_details = {} }) {
-    return this.create({
+  async createPayment({ order_id, payment_method, payment_amount, status = 'pending', transaction_id = null, details = {} }) {
+    const finalTransactionId = transaction_id || generateMockPaymentDetails(payment_method, details);
+    const payment = await this.create({
       order_id,
       payment_method,
       payment_amount,
       status,
-      transaction_id,
-      payment_details
+      transaction_id: finalTransactionId,
+      payment_date: new Date().toISOString()
     });
+    return payment
+      ? {
+          ...payment,
+          details: parsePaymentDetails(payment.transaction_id)
+        }
+      : payment;
   }
 
   async findLatestByOrderId(orderId) {
@@ -45,7 +56,12 @@ export default class PaymentRepository extends BaseRepository {
         .limit(1)
         .maybeSingle();
       if (error) throw new DatabaseError('Failed to find latest payment', error);
-      return data || null;
+      return data
+        ? {
+            ...data,
+            details: parsePaymentDetails(data.transaction_id)
+          }
+        : null;
     } catch (error) {
       if (error instanceof DatabaseError) throw error;
       throw new DatabaseError(`Find latest payment failed: ${error.message}`, error);
@@ -53,19 +69,24 @@ export default class PaymentRepository extends BaseRepository {
   }
 
   async markCompleted(paymentId, options = {}) {
-    return this.updateById(paymentId, {
+    const payment = await this.updateById(paymentId, {
       status: 'completed',
       transaction_id: options.transaction_id,
-      payment_details: options.payment_details,
-      paid_at: options.paid_at || new Date().toISOString()
+      payment_date: options.payment_date || new Date().toISOString()
     });
+    return payment
+      ? {
+          ...payment,
+          details: parsePaymentDetails(payment.transaction_id)
+        }
+      : payment;
   }
 
-  async refundPayment(paymentId, refundNote = null) {
+  async refundPayment(paymentId) {
     return this.updateById(paymentId, {
       status: 'refunded',
-      refund_note: refundNote,
-      refunded_at: new Date().toISOString()
+      transaction_id: `REFUND_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
+      payment_date: new Date().toISOString()
     });
   }
 

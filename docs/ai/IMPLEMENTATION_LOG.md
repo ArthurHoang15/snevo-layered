@@ -264,3 +264,42 @@ Append one entry after each completed implementation task that changes code or d
 
 **Remaining notes:**
 - Full app behavior equivalence remains impossible until Phase 3-5 add services, presentation/routes, server bootstrap, frontend/static files, schema, and scripts.
+
+## 2026-06-08 - Phase 2 Repository Final Schema Cleanup
+
+**Actor:** Quan / AI-assisted
+
+**Prompt summary:** Finish Phase 2 repository hardening by removing schema mismatches and business decision wrappers before Phase 3 service work.
+
+**Implemented:**
+- Added repository contract smoke tests that run without Supabase credentials.
+- Aligned order item writes and order total calculations to `price_per_unit`.
+- Aligned payment writes to the reference `payments` schema and kept payment details encoded in `transaction_id`.
+- Aligned import queries, writes, statistics, date filtering, and stock reversal to `quantity_imported`, `import_price`, `supplier_id`, and `import_date`.
+- Removed repository business decision wrappers for category uniqueness, purchase verification, cart summary totals, and shoe restore preview decisions.
+
+**Architecture impact:**
+- Kept repository code focused on database reads/writes and raw query helpers.
+- Moved validation, eligibility checks, pricing totals, restore decisions, and order/payment workflow choices to the future service layer.
+- Preserved dependency direction by avoiding imports from `business/` or `presentation/`.
+
+**Files changed:**
+- `backend/data/repositories/OrderItemRepository.js`
+- `backend/data/repositories/OrderRepository.js`
+- `backend/data/repositories/PaymentRepository.js`
+- `backend/data/repositories/ImportRepository.js`
+- `backend/data/repositories/CategoryRepository.js`
+- `backend/data/repositories/ReviewRepository.js`
+- `backend/data/repositories/CartRepository.js`
+- `backend/data/repositories/ShoeRepository.js`
+- `test/repository-phase2-contract.test.js`
+- `docs/ai/PHASE_STATUS.md`
+- `docs/ai/IMPLEMENTATION_LOG.md`
+
+**Verification:**
+- Ran repository contract tests with `npm test`.
+- Ran repository layer-rule scans for forbidden validation/business imports and schema-mismatched field names.
+- Ran repository dynamic import smoke check.
+
+**Remaining notes:**
+- Full app behavior equivalence still waits for Phase 3-5 services, presentation/routes, server bootstrap, frontend/static files, and schema copy.
