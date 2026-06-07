@@ -6,10 +6,19 @@ Snevo Layered is a new repository that refactors the Snevo e-commerce reference 
 
 ## Repositories
 
-- New repo: `D:\Anh-Quan\A_pv_things\software-arch\Snevo-layered`
-- Reference repo: `D:\Anh-Quan\A_pv_things\software-arch\Snevo-reference`
-- Architecture plan: `D:\Anh-Quan\A_pv_things\SNEVO_REFACTOR_PLAN.md`
-- Team plan: `REFACTOR_TEAM_PLAN.md` when available locally
+- New repo: current clone root, referred to as `<SNEVO_LAYERED_ROOT>`.
+- Reference repo: set per machine with `SNEVO_REFERENCE_PATH`.
+- Architecture plan: set per machine with `SNEVO_REFACTOR_PLAN_PATH`.
+- Team plan: `<SNEVO_LAYERED_ROOT>/REFACTOR_TEAM_PLAN.md` when available locally.
+
+Suggested local setup for each member:
+
+```powershell
+cd <SNEVO_LAYERED_ROOT>
+$env:SNEVO_LAYERED_ROOT = (Get-Location).Path
+$env:SNEVO_REFERENCE_PATH = "<absolute-path-to-Snevo-reference>"
+$env:SNEVO_REFACTOR_PLAN_PATH = "<absolute-path-to-SNEVO_REFACTOR_PLAN.md>"
+```
 
 ## Tech Stack
 

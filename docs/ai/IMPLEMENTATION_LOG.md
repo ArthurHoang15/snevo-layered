@@ -106,3 +106,29 @@ Append one entry after each completed implementation task that changes code or d
 
 **Remaining notes:**
 - Future implementation tasks must append to this file before final response.
+
+## 2026-06-07 - Portable Path Documentation
+
+**Actor:** AI-assisted
+
+**Prompt summary:** Replace machine-specific absolute paths in team docs so other members can clone the repo and use the AI context on their own machines.
+
+**Implemented:**
+- Replaced fixed local paths in project context with portable root placeholders and environment variables.
+- Updated the team refactor plan to use `<SNEVO_LAYERED_ROOT>`, `SNEVO_REFERENCE_PATH`, and `SNEVO_REFACTOR_PLAN_PATH`.
+- Updated reference-source examples and copy commands to use the configured reference repo path.
+
+**Architecture impact:**
+- No backend architecture or application behavior changed.
+- Improved AI/documentation portability for collaborators.
+
+**Files changed:**
+- `docs/ai/PROJECT_CONTEXT.md`
+- `REFACTOR_TEAM_PLAN.md`
+- `docs/ai/IMPLEMENTATION_LOG.md`
+
+**Verification:**
+- Searched AI/team docs for the old machine-specific path strings; no machine-specific paths remained.
+
+**Remaining notes:**
+- Each team member still needs to set local environment variables to their own reference repo and architecture plan locations.
