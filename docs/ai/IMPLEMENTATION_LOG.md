@@ -132,3 +132,46 @@ Append one entry after each completed implementation task that changes code or d
 
 **Remaining notes:**
 - Each team member still needs to set local environment variables to their own reference repo and architecture plan locations.
+
+## 2026-06-07 - Phase 2 Repository Layer
+
+**Actor:** Quan / AI-assisted
+
+**Prompt summary:** Port old model data-access behavior into layered repository classes while removing validation concerns from repositories.
+
+**Implemented:**
+- Added `BaseRepository` with database-only CRUD/query helpers.
+- Added product catalog repositories for shoes and categories.
+- Added variant metadata repositories for colors, sizes, and shoe variants.
+- Added cart, order, order item, payment, profile, address, review, and import repositories.
+- Removed old repository `.gitkeep` marker after real repository files were created.
+
+**Architecture impact:**
+- Created the Data Repository layer under `backend/data/repositories`.
+- Moved model data-access behavior toward repositories that use Infrastructure Supabase access.
+- Kept validation/business rules out of repositories for Phase 3 services.
+
+**Files changed:**
+- `backend/data/repositories/BaseRepository.js`
+- `backend/data/repositories/ShoeRepository.js`
+- `backend/data/repositories/CategoryRepository.js`
+- `backend/data/repositories/ColorRepository.js`
+- `backend/data/repositories/SizeRepository.js`
+- `backend/data/repositories/ShoeVariantRepository.js`
+- `backend/data/repositories/CartRepository.js`
+- `backend/data/repositories/OrderRepository.js`
+- `backend/data/repositories/OrderItemRepository.js`
+- `backend/data/repositories/PaymentRepository.js`
+- `backend/data/repositories/ProfileRepository.js`
+- `backend/data/repositories/AddressRepository.js`
+- `backend/data/repositories/ReviewRepository.js`
+- `backend/data/repositories/ImportRepository.js`
+
+**Verification:**
+- Planned static import checks for all repository modules.
+- Planned layer-rule checks for forbidden `validationRules`, `BaseModel`, presentation, and business imports.
+- Planned import whitelist check for repository imports.
+- Planned `npm test` smoke check.
+
+**Remaining notes:**
+- Service layer still needs to be created in Phase 3.
