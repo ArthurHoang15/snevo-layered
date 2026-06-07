@@ -1,6 +1,5 @@
 import BaseRepository from './BaseRepository.js';
 import { DatabaseError } from '../../infrastructure/errors/ErrorClasses.js';
-import { parsePaymentDetails } from '../../infrastructure/utils/orderUtils.js';
 
 export default class OrderRepository extends BaseRepository {
   constructor() {
@@ -144,10 +143,6 @@ export default class OrderRepository extends BaseRepository {
       }
 
       if (Array.isArray(data.payments) && data.payments.length > 0) {
-        data.payments = data.payments.map((payment) => ({
-          ...payment,
-          details: parsePaymentDetails(payment.transaction_id)
-        }));
         data.payment = data.payments[0];
       }
 
@@ -172,12 +167,7 @@ export default class OrderRepository extends BaseRepository {
       if (error) throw new DatabaseError('Failed to find order payment', error);
       return {
         ...order,
-        payment: payment
-          ? {
-              ...payment,
-              details: parsePaymentDetails(payment.transaction_id)
-            }
-          : null
+        payment: payment || null
       };
     } catch (error) {
       if (error instanceof DatabaseError) throw error;
@@ -191,20 +181,6 @@ export default class OrderRepository extends BaseRepository {
 
   async updateStatus(orderId, status) {
     return this.setStatus(orderId, status);
-  }
-
-  async calculateTotal(orderId) {
-    try {
-      const { data, error } = await this.db
-        .from('order_items')
-        .select('quantity, price_per_unit')
-        .eq('order_id', orderId);
-      if (error) throw new DatabaseError('Failed to calculate order total', error);
-      return (data || []).reduce((sum, item) => sum + Number(item.quantity || 0) * Number(item.price_per_unit || 0), 0);
-    } catch (error) {
-      if (error instanceof DatabaseError) throw error;
-      throw new DatabaseError(`Calculate order total failed: ${error.message}`, error);
-    }
   }
 
   async createOrder({ user_id, address_id, total_amount, shipping_cost = 0, tax_amount = 0, notes = null, status = undefined }) {

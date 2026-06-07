@@ -167,10 +167,7 @@ export default class BaseRepository {
 
       const { data, error } = await this.db
         .from(this.getQualifiedTableName())
-        .update({
-          is_active: false,
-          deleted_at: new Date().toISOString()
-        })
+        .update({ is_active: false })
         .eq(this.primaryKey, id)
         .select()
         .single();
@@ -190,10 +187,7 @@ export default class BaseRepository {
     try {
       const { data, error } = await this.db
         .from(this.getQualifiedTableName())
-        .update({
-          is_active: true,
-          deleted_at: null
-        })
+        .update({ is_active: true })
         .eq(this.primaryKey, id)
         .select()
         .single();

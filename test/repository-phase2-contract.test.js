@@ -33,7 +33,16 @@ test('payment repository writes only columns available in the reference schema',
   const payment = await source('PaymentRepository.js');
 
   assert.match(payment, /payment_date/);
-  for (const forbidden of ['payment_details', 'paid_at', 'refund_note', 'refunded_at']) {
+  for (const forbidden of [
+    'payment_details',
+    'paid_at',
+    'refund_note',
+    'refunded_at',
+    'parsePaymentDetails',
+    'generateMockPaymentDetails',
+    'markCompleted',
+    'refundPayment'
+  ]) {
     assert.doesNotMatch(payment, new RegExp(forbidden));
   }
 });
@@ -45,13 +54,12 @@ test('import repository uses reference import schema fields', async () => {
     assert.match(importRepository, new RegExp(required));
   }
 
-  for (const forbidden of ['cost_price', 'supplier_name', 'p_quantity_change']) {
+  for (const forbidden of ['cost_price', 'supplier_name', 'p_quantity_change', 'update_variant_stock']) {
     assert.doesNotMatch(importRepository, new RegExp(forbidden));
   }
 
   assert.doesNotMatch(importRepository, /\bquantity:\s*item\.quantity\b/);
-  assert.match(importRepository, /p_quantity:\s*-Number\(importRecord\.quantity_imported \|\| 0\)/);
-  assert.match(importRepository, /p_operation:\s*['"]add['"]/);
+  assert.match(importRepository, /stock_quantity/);
 });
 
 test('repositories expose query helpers, not business decision wrappers', async () => {
@@ -59,15 +67,34 @@ test('repositories expose query helpers, not business decision wrappers', async 
   const review = await source('ReviewRepository.js');
   const cart = await source('CartRepository.js');
   const shoe = await source('ShoeRepository.js');
+  const address = await source('AddressRepository.js');
+  const order = await source('OrderRepository.js');
+  const variant = await source('ShoeVariantRepository.js');
+  const base = await source('BaseRepository.js');
 
   assert.doesNotMatch(category, /validateUniqueName\s*\(/);
-  assert.match(category, /findByNameForUniqueness\s*\(/);
+  assert.doesNotMatch(category, /findByNameForUniqueness\s*\(/);
+  assert.match(category, /findByName\s*\(/);
 
   assert.doesNotMatch(review, /verifyPurchase\s*\(/);
   assert.match(review, /findPurchasedOrderItems\s*\(/);
+  assert.match(review, /review_date/);
+  assert.doesNotMatch(review, /created_at/);
 
   assert.doesNotMatch(cart, /async\s+summary\s*\(/);
   assert.doesNotMatch(cart, /tax_amount|shipping_cost|total_amount/);
+  assert.doesNotMatch(cart, /addOrUpdate\s*\(/);
+  assert.match(cart, /createItem\s*\(/);
+  assert.match(cart, /added_at/);
 
   assert.doesNotMatch(shoe, /can_restore|will_restore|will_skip|skip_reason/);
+  assert.doesNotMatch(shoe, /is_featured/);
+
+  assert.doesNotMatch(address, /setDefault\s*\(/);
+  assert.match(address, /clearDefaultForUser\s*\(/);
+  assert.match(address, /updateDefaultFlag\s*\(/);
+
+  assert.doesNotMatch(order, /parsePaymentDetails|calculateTotal\s*\(/);
+  assert.doesNotMatch(variant, /generateSKU|generateAllVariants|generateSpecificVariants/);
+  assert.doesNotMatch(base, /deleted_at/);
 });

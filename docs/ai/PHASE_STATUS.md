@@ -4,7 +4,7 @@
 |---|---|---|---|
 | Phase 0 - Repo scaffold | Quan | Done | Project structure and layered backend folders created. |
 | Phase 1 - Infrastructure layer | Quan | Done | Supabase singleton, error classes, constants, utilities, and compatibility wrappers added. |
-| Phase 2 - Repository layer | Quan | Done | Repository layer created from old models; schema/reference cleanup and strict repository-only hardening completed. |
+| Phase 2 - Repository layer | Quan | Done | Repository layer is schema-safe; business workflows and response shaping are explicitly deferred to Phase 3 services. |
 | Phase 3 - Service layer | Nhan | Next | Move business rules into constructor-injected services. |
 | Phase 4 - Presentation layer | Hoang | Pending | Port controllers, routes, and middleware as HTTP-only handling. |
 | Phase 5 - Bootstrap, server, frontend/static, docs | Hoang | Pending | Wire container/server, restore frontend/static behavior, and finish docs. |

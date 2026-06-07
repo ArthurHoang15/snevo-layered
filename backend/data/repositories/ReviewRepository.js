@@ -17,7 +17,7 @@ export default class ReviewRepository extends BaseRepository {
         query = query.in('orders.status', statuses);
       }
       const { data, error } = await query;
-      if (error) throw new DatabaseError('Failed to verify purchase', error);
+      if (error) throw new DatabaseError('Failed to find purchased order items', error);
       return data || [];
     } catch (error) {
       if (error instanceof DatabaseError) throw error;
@@ -47,7 +47,7 @@ export default class ReviewRepository extends BaseRepository {
 
   async findByShoeId(shoeId, options = {}) {
     try {
-      const { page = 1, limit = 20, orderBy = 'created_at', orderDirection = 'desc' } = options;
+      const { page = 1, limit = 20, orderBy = 'review_date', orderDirection = 'desc' } = options;
       const offset = (page - 1) * limit;
       const { data, error, count } = await this.db
         .from(this.tableName)

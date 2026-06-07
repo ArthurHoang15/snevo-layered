@@ -1,9 +1,5 @@
 import BaseRepository from './BaseRepository.js';
 import { DatabaseError } from '../../infrastructure/errors/ErrorClasses.js';
-import {
-  generateMockPaymentDetails,
-  parsePaymentDetails
-} from '../../infrastructure/utils/orderUtils.js';
 
 export default class PaymentRepository extends BaseRepository {
   constructor() {
@@ -28,22 +24,15 @@ export default class PaymentRepository extends BaseRepository {
     return this.updateById(paymentId, updateData);
   }
 
-  async createPayment({ order_id, payment_method, payment_amount, status = 'pending', transaction_id = null, details = {} }) {
-    const finalTransactionId = transaction_id || generateMockPaymentDetails(payment_method, details);
-    const payment = await this.create({
+  async createPayment({ order_id, payment_method, payment_amount, status = 'pending', transaction_id = null, payment_date = null }) {
+    return this.create({
       order_id,
       payment_method,
       payment_amount,
       status,
-      transaction_id: finalTransactionId,
-      payment_date: new Date().toISOString()
+      transaction_id,
+      payment_date: payment_date || new Date().toISOString()
     });
-    return payment
-      ? {
-          ...payment,
-          details: parsePaymentDetails(payment.transaction_id)
-        }
-      : payment;
   }
 
   async findLatestByOrderId(orderId) {
@@ -56,41 +45,14 @@ export default class PaymentRepository extends BaseRepository {
         .limit(1)
         .maybeSingle();
       if (error) throw new DatabaseError('Failed to find latest payment', error);
-      return data
-        ? {
-            ...data,
-            details: parsePaymentDetails(data.transaction_id)
-          }
-        : null;
+      return data || null;
     } catch (error) {
       if (error instanceof DatabaseError) throw error;
       throw new DatabaseError(`Find latest payment failed: ${error.message}`, error);
     }
   }
 
-  async markCompleted(paymentId, options = {}) {
-    const payment = await this.updateById(paymentId, {
-      status: 'completed',
-      transaction_id: options.transaction_id,
-      payment_date: options.payment_date || new Date().toISOString()
-    });
-    return payment
-      ? {
-          ...payment,
-          details: parsePaymentDetails(payment.transaction_id)
-        }
-      : payment;
-  }
-
-  async refundPayment(paymentId) {
-    return this.updateById(paymentId, {
-      status: 'refunded',
-      transaction_id: `REFUND_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
-      payment_date: new Date().toISOString()
-    });
-  }
-
-  async calculateTotalRevenue() {
+  async sumCompletedRevenue() {
     try {
       const { data, error } = await this.db
         .from(this.tableName)
@@ -100,7 +62,7 @@ export default class PaymentRepository extends BaseRepository {
       return (data || []).reduce((sum, payment) => sum + Number(payment.payment_amount || 0), 0);
     } catch (error) {
       if (error instanceof DatabaseError) throw error;
-      throw new DatabaseError(`Calculate total revenue failed: ${error.message}`, error);
+      throw new DatabaseError(`Sum completed revenue failed: ${error.message}`, error);
     }
   }
 }

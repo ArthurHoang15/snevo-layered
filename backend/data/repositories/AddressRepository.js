@@ -30,35 +30,38 @@ export default class AddressRepository extends BaseRepository {
     return this.findOne({ user_id: userId, is_default: true });
   }
 
-  async setDefault(userId, addressId) {
+  async clearDefaultForUser(userId) {
     try {
-      const { error: unsetError } = await this.db
+      const { error } = await this.db
         .from(this.tableName)
         .update({ is_default: false })
         .eq('user_id', userId);
-      if (unsetError) throw new DatabaseError('Failed to unset default address', unsetError);
+      if (error) throw new DatabaseError('Failed to clear default addresses', error);
+      return true;
+    } catch (error) {
+      if (error instanceof DatabaseError) throw error;
+      throw new DatabaseError(`Clear default addresses failed: ${error.message}`, error);
+    }
+  }
 
+  async updateDefaultFlag(addressId, isDefault) {
+    try {
       const { data, error } = await this.db
         .from(this.tableName)
-        .update({ is_default: true })
-        .eq('user_id', userId)
+        .update({ is_default: isDefault })
         .eq(this.primaryKey, addressId)
         .select()
         .single();
-      if (error) throw new DatabaseError('Failed to set default address', error);
+      if (error) throw new DatabaseError('Failed to update address default flag', error);
       return data;
     } catch (error) {
       if (error instanceof DatabaseError) throw error;
-      throw new DatabaseError(`Set default address failed: ${error.message}`, error);
+      throw new DatabaseError(`Update address default flag failed: ${error.message}`, error);
     }
   }
 
   async createForUser(userId, addressData) {
-    const address = await this.create({ ...addressData, user_id: userId });
-    if (addressData.is_default) {
-      return this.setDefault(userId, address.address_id);
-    }
-    return address;
+    return this.create({ ...addressData, user_id: userId });
   }
 
   async updateForUser(userId, addressId, addressData) {
@@ -71,9 +74,6 @@ export default class AddressRepository extends BaseRepository {
         .select()
         .single();
       if (error) throw new DatabaseError('Failed to update user address', error);
-      if (addressData.is_default) {
-        return this.setDefault(userId, addressId);
-      }
       return data;
     } catch (error) {
       if (error instanceof DatabaseError) throw error;

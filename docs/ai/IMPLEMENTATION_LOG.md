@@ -303,3 +303,47 @@ Append one entry after each completed implementation task that changes code or d
 
 **Remaining notes:**
 - Full app behavior equivalence still waits for Phase 3-5 services, presentation/routes, server bootstrap, frontend/static files, and schema copy.
+
+## 2026-06-08 - Phase 2 Strict Repository Cleanup
+
+**Actor:** Quan / AI-assisted
+
+**Prompt summary:** Remove remaining Phase 2 repository schema risks and business workflow helpers so services can own user-facing behavior in Phase 3.
+
+**Implemented:**
+- Expanded repository contract tests to catch schema-unsafe fields, business wrapper names, and repository workflow helpers.
+- Made base soft delete and restore update only `is_active` so repositories do not write unsupported `deleted_at` columns.
+- Removed payment detail parsing/generation, payment completion, and refund workflow helpers from `PaymentRepository`.
+- Removed order payment detail enrichment and order total calculation from `OrderRepository`.
+- Replaced category uniqueness-named helper with a neutral `findByName` query helper.
+- Moved cart add-or-update workflow, address default orchestration, and variant generation workflows out of repositories.
+- Aligned cart ordering to `added_at`, review ordering to `review_date`, removed `is_featured` filtering, and replaced import stock reversal RPC use with direct stock update.
+
+**Architecture impact:**
+- Repository layer now exposes database query/write primitives instead of business workflow decisions.
+- Phase 3 services must recreate cart quantity rules, payment lifecycle behavior, default address behavior, variant SKU generation, response shaping, and order totals.
+- Preserved dependency direction and kept Phase 2 limited to data repositories.
+
+**Files changed:**
+- `backend/data/repositories/BaseRepository.js`
+- `backend/data/repositories/PaymentRepository.js`
+- `backend/data/repositories/OrderRepository.js`
+- `backend/data/repositories/CategoryRepository.js`
+- `backend/data/repositories/ReviewRepository.js`
+- `backend/data/repositories/CartRepository.js`
+- `backend/data/repositories/AddressRepository.js`
+- `backend/data/repositories/ShoeVariantRepository.js`
+- `backend/data/repositories/ShoeRepository.js`
+- `backend/data/repositories/ImportRepository.js`
+- `test/repository-phase2-contract.test.js`
+- `docs/ai/PHASE_STATUS.md`
+- `docs/ai/IMPLEMENTATION_LOG.md`
+
+**Verification:**
+- Ran `npm test`.
+- Ran repository layer-rule and schema-safety scans.
+- Ran repository dynamic import smoke check.
+
+**Remaining notes:**
+- Reference `schema.sql` still does not define the `carts` table used by both reference and layered cart code; Phase 5 schema verification must resolve or document that mismatch.
+- Full app behavior equivalence still waits for Phase 3-5 services, presentation/routes, server bootstrap, frontend/static files, and schema copy.

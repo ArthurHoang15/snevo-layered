@@ -14,15 +14,20 @@ export default class CartRepository extends BaseRepository {
           *,
           shoe_variants (
             variant_id,
+            shoe_id,
+            color_id,
+            size_id,
             sku,
             stock_quantity,
+            variant_price,
+            is_active,
             shoes ( shoe_id, shoe_name, image_url, base_price ),
             colors ( color_id, color_name, hex_code ),
             sizes ( size_id, size_value, size_type )
           )
         `)
         .eq('user_id', userId)
-        .order('created_at', { ascending: false });
+        .order('added_at', { ascending: false });
 
       if (error) throw new DatabaseError('Failed to list cart items', error);
       return data || [];
@@ -49,32 +54,24 @@ export default class CartRepository extends BaseRepository {
     }
   }
 
-  async addOrUpdate(userId, variantId, quantity, priceAtAdd) {
+  async createItem({ user_id, variant_id, quantity, price_at_add }) {
     try {
-      const existing = await this.findByUserAndVariant(userId, variantId);
-      if (existing) {
-        return this.updateItem(existing.cart_id, {
-          quantity: Number(existing.quantity || 0) + Number(quantity || 0),
-          price_at_add: priceAtAdd
-        });
-      }
-
       const { data, error } = await this.db
         .from(this.tableName)
         .insert([{
-          user_id: userId,
-          variant_id: variantId,
+          user_id,
+          variant_id,
           quantity,
-          price_at_add: priceAtAdd
+          price_at_add
         }])
         .select()
         .single();
 
-      if (error) throw new DatabaseError('Failed to add to cart', error);
+      if (error) throw new DatabaseError('Failed to create cart item', error);
       return data;
     } catch (error) {
       if (error instanceof DatabaseError) throw error;
-      throw new DatabaseError(`Add or update cart item failed: ${error.message}`, error);
+      throw new DatabaseError(`Create cart item failed: ${error.message}`, error);
     }
   }
 

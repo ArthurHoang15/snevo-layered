@@ -142,11 +142,21 @@ export default class ImportRepository extends BaseRepository {
         throw new NotFoundError('Import');
       }
 
-      const { error: stockError } = await this.db.rpc('update_variant_stock', {
-        p_variant_id: importRecord.variant_id,
-        p_quantity: -Number(importRecord.quantity_imported || 0),
-        p_operation: 'add'
-      });
+      const { data: variant, error: variantError } = await this.db
+        .from('shoe_variants')
+        .select('stock_quantity')
+        .eq('variant_id', importRecord.variant_id)
+        .single();
+      if (variantError) throw new DatabaseError('Failed to find imported variant stock', variantError);
+
+      const nextStock = Math.max(
+        0,
+        Number(variant.stock_quantity || 0) - Number(importRecord.quantity_imported || 0)
+      );
+      const { error: stockError } = await this.db
+        .from('shoe_variants')
+        .update({ stock_quantity: nextStock })
+        .eq('variant_id', importRecord.variant_id);
       if (stockError) throw new DatabaseError('Failed to reverse imported stock', stockError);
 
       await this.deleteById(importId);

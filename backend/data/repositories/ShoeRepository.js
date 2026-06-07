@@ -198,7 +198,7 @@ export default class ShoeRepository extends BaseRepository {
   }
 
   async getFeatured(limit = 10) {
-    const result = await this.findAllWithFilters({ is_active: true, is_featured: true }, { page: 1, limit });
+    const result = await this.findAllWithFilters({ is_active: true }, { page: 1, limit });
     return result.data;
   }
 

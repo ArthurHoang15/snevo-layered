@@ -79,7 +79,7 @@ export default class CategoryRepository extends BaseRepository {
     }
   }
 
-  async findByNameForUniqueness(categoryName, excludeCategoryId = null) {
+  async findByName(categoryName, excludeCategoryId = null) {
     try {
       let query = this.db
         .from(this.tableName)
@@ -87,11 +87,11 @@ export default class CategoryRepository extends BaseRepository {
         .eq('category_name', categoryName);
       if (excludeCategoryId) query = query.neq('category_id', excludeCategoryId);
       const { data, error } = await query.maybeSingle();
-      if (error) throw new DatabaseError('Failed to check category name uniqueness', error);
+      if (error) throw new DatabaseError('Failed to find category by name', error);
       return data || null;
     } catch (error) {
       if (error instanceof DatabaseError) throw error;
-      throw new DatabaseError(`Find category by name for uniqueness failed: ${error.message}`, error);
+      throw new DatabaseError(`Find category by name failed: ${error.message}`, error);
     }
   }
 }
