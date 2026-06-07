@@ -151,7 +151,7 @@ openspec/
 
 AGENTS.md
 .serena/
-#REFACTOR_TEAM_PLAN.md
+REFACTOR_TEAM_PLAN.md
 
 # Root-level test files (prevent accidental commits)
 # Note: /tests/ directory is allowed; only root-level test_*.js/test_*.html are excluded
