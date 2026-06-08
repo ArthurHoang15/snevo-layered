@@ -89,12 +89,30 @@ test('repositories expose query helpers, not business decision wrappers', async 
 
   assert.doesNotMatch(shoe, /can_restore|will_restore|will_skip|skip_reason/);
   assert.doesNotMatch(shoe, /is_featured/);
+  assert.doesNotMatch(shoe, /updateStock\s*\(/);
+  const shoeReviewsBody = shoe.match(/async getReviews[\s\S]*?\n  async getRatingSummary/)?.[0] || '';
+  assert.match(shoeReviewsBody, /review_date/);
+  assert.doesNotMatch(shoeReviewsBody, /created_at/);
 
   assert.doesNotMatch(address, /setDefault\s*\(/);
   assert.match(address, /clearDefaultForUser\s*\(/);
   assert.match(address, /updateDefaultFlag\s*\(/);
 
   assert.doesNotMatch(order, /parsePaymentDetails|calculateTotal\s*\(/);
-  assert.doesNotMatch(variant, /generateSKU|generateAllVariants|generateSpecificVariants/);
+  assert.doesNotMatch(variant, /generateSKU|generateAllVariants|generateSpecificVariants|checkStock\s*\(/);
+  assert.doesNotMatch(variant, /operation\s*=\s*['"]set['"]|increment|decrement|subtract|clamp/);
+  assert.match(variant, /findStockById\s*\(/);
+  assert.match(variant, /setStockQuantity\s*\(/);
   assert.doesNotMatch(base, /deleted_at/);
+});
+
+test('repositories keep import and stock workflows service-owned', async () => {
+  const importRepository = await source('ImportRepository.js');
+  const shoe = await source('ShoeRepository.js');
+  const variant = await source('ShoeVariantRepository.js');
+
+  for (const sourceText of [importRepository, shoe, variant]) {
+    assert.doesNotMatch(sourceText, /deleteWithStockReverse|checkStock\s*\(|updateStock\s*\(/);
+    assert.doesNotMatch(sourceText, /operation\s*=\s*['"]set['"]|increment|decrement|subtract|clamp/);
+  }
 });

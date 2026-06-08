@@ -347,3 +347,37 @@ Append one entry after each completed implementation task that changes code or d
 **Remaining notes:**
 - Reference `schema.sql` still does not define the `carts` table used by both reference and layered cart code; Phase 5 schema verification must resolve or document that mismatch.
 - Full app behavior equivalence still waits for Phase 3-5 services, presentation/routes, server bootstrap, frontend/static files, and schema copy.
+
+## 2026-06-08 - Phase 2 Remaining Repository Cleanup
+
+**Actor:** Quan / AI-assisted
+
+**Prompt summary:** Fix the remaining Phase 2 repository issues found in audit: review ordering schema mismatch, import/stock workflow leakage, and unresolved cart/featured schema inconsistencies.
+
+**Implemented:**
+- Updated repository contract tests to catch `ShoeRepository.getReviews()` ordering by unsupported review fields and to block stock/import workflow helper names in repositories.
+- Changed `ShoeRepository.getReviews()` to order by `review_date`.
+- Removed `ImportRepository.deleteWithStockReverse()` so import deletion and stock reversal can be composed by Phase 3 services.
+- Removed `ShoeRepository.updateStock()` and replaced `ShoeVariantRepository.updateStock()`/`checkStock()` with raw `findStockById()` and `setStockQuantity()` primitives.
+- Kept `CartRepository` and `ShoeRepository.getFeatured()` as Phase 2 query helpers without adding unsupported schema columns or migrations.
+
+**Architecture impact:**
+- Stock availability, stock add/subtract, import stock reversal, cart behavior, and featured product semantics are now explicitly service/schema follow-ups instead of repository decisions.
+- Repository layer remains limited to schema-compatible reads/writes and query helpers.
+
+**Files changed:**
+- `backend/data/repositories/ImportRepository.js`
+- `backend/data/repositories/ShoeRepository.js`
+- `backend/data/repositories/ShoeVariantRepository.js`
+- `test/repository-phase2-contract.test.js`
+- `docs/ai/PHASE_STATUS.md`
+- `docs/ai/IMPLEMENTATION_LOG.md`
+
+**Verification:**
+- Ran `npm test`.
+- Ran repository layer-rule and remaining workflow/static scans.
+- Ran repository dynamic import smoke check.
+
+**Remaining notes:**
+- Reference `schema.sql` still lacks `carts` and `shoes.is_featured`; Phase 5 must resolve or document these before claiming full app equivalence.
+- Phase 3 services must recreate user-facing stock, cart, import reversal, and featured response behavior by composing repository primitives.

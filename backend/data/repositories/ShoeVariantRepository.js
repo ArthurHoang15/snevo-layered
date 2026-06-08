@@ -54,44 +54,39 @@ export default class ShoeVariantRepository extends BaseRepository {
     }
   }
 
-  async updateStock(variantId, quantity, operation = 'set') {
+  async findStockById(variantId) {
     try {
-      const { data: variant, error: findError } = await this.db
+      const { data, error } = await this.db
         .from(this.tableName)
-        .select('stock_quantity')
+        .select('variant_id, stock_quantity')
         .eq(this.primaryKey, variantId)
-        .single();
-      if (findError) throw new DatabaseError('Failed to find variant stock', findError);
-      const currentStock = Number(variant.stock_quantity || 0);
-      const amount = Number(quantity || 0);
-      const stockQuantity = operation === 'increment' || operation === 'add'
-        ? currentStock + amount
-        : operation === 'decrement' || operation === 'subtract'
-          ? Math.max(0, currentStock - amount)
-          : amount;
+        .maybeSingle();
+      if (error) throw new DatabaseError('Failed to find variant stock', error);
+      return data || null;
+    } catch (error) {
+      if (error instanceof DatabaseError) throw error;
+      throw new DatabaseError(`Find variant stock failed: ${error.message}`, error);
+    }
+  }
+
+  async setStockQuantity(variantId, stockQuantity) {
+    try {
       const { data, error } = await this.db
         .from(this.tableName)
         .update({ stock_quantity: stockQuantity })
         .eq(this.primaryKey, variantId)
         .select('*, shoes(shoe_id, shoe_name, base_price, image_url), colors(color_id, color_name, hex_code), sizes(size_id, size_value, size_type)')
         .single();
-      if (error) throw new DatabaseError('Failed to update variant stock', error);
+      if (error) throw new DatabaseError('Failed to set variant stock quantity', error);
       return data;
     } catch (error) {
       if (error instanceof DatabaseError) throw error;
-      throw new DatabaseError(`Update variant stock failed: ${error.message}`, error);
+      throw new DatabaseError(`Set variant stock quantity failed: ${error.message}`, error);
     }
   }
 
   async update(variantId, updateData) {
     return this.updateById(variantId, updateData);
-  }
-
-  async checkStock(variantId, requestedQuantity) {
-    const variant = await this.findById(variantId);
-    if (!variant) return { available: false, current_stock: 0 };
-    const currentStock = Number(variant.stock_quantity || 0);
-    return { available: currentStock >= requestedQuantity, current_stock: currentStock };
   }
 
   async findLowStock(threshold = 10) {

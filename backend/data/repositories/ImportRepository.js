@@ -1,5 +1,5 @@
 import BaseRepository from './BaseRepository.js';
-import { DatabaseError, NotFoundError } from '../../infrastructure/errors/ErrorClasses.js';
+import { DatabaseError } from '../../infrastructure/errors/ErrorClasses.js';
 
 export default class ImportRepository extends BaseRepository {
   constructor() {
@@ -135,39 +135,4 @@ export default class ImportRepository extends BaseRepository {
     }
   }
 
-  async deleteWithStockReverse(importId) {
-    try {
-      const importRecord = await this.findById(importId);
-      if (!importRecord) {
-        throw new NotFoundError('Import');
-      }
-
-      const { data: variant, error: variantError } = await this.db
-        .from('shoe_variants')
-        .select('stock_quantity')
-        .eq('variant_id', importRecord.variant_id)
-        .single();
-      if (variantError) throw new DatabaseError('Failed to find imported variant stock', variantError);
-
-      const nextStock = Math.max(
-        0,
-        Number(variant.stock_quantity || 0) - Number(importRecord.quantity_imported || 0)
-      );
-      const { error: stockError } = await this.db
-        .from('shoe_variants')
-        .update({ stock_quantity: nextStock })
-        .eq('variant_id', importRecord.variant_id);
-      if (stockError) throw new DatabaseError('Failed to reverse imported stock', stockError);
-
-      await this.deleteById(importId);
-      return {
-        success: true,
-        message: 'Import deleted and stock reversed',
-        reversed_quantity: importRecord.quantity_imported
-      };
-    } catch (error) {
-      if (error instanceof DatabaseError || error instanceof NotFoundError) throw error;
-      throw new DatabaseError(`Delete import with stock reverse failed: ${error.message}`, error);
-    }
-  }
 }

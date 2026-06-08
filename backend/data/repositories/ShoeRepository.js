@@ -251,36 +251,6 @@ export default class ShoeRepository extends BaseRepository {
     }
   }
 
-  async updateStock(variantId, quantity, operation = 'set') {
-    try {
-      const { data: variant, error: findError } = await this.db
-        .from('shoe_variants')
-        .select('stock_quantity')
-        .eq('variant_id', variantId)
-        .single();
-      if (findError) throw new DatabaseError('Failed to find variant stock', findError);
-
-      const current = Number(variant.stock_quantity || 0);
-      const amount = Number(quantity || 0);
-      const next = operation === 'increment' || operation === 'add'
-        ? current + amount
-        : operation === 'decrement' || operation === 'subtract'
-          ? Math.max(0, current - amount)
-          : amount;
-      const { data, error } = await this.db
-        .from('shoe_variants')
-        .update({ stock_quantity: next })
-        .eq('variant_id', variantId)
-        .select()
-        .single();
-      if (error) throw new DatabaseError('Failed to update stock', error);
-      return data;
-    } catch (error) {
-      if (error instanceof DatabaseError) throw error;
-      throw new DatabaseError(`Update stock failed: ${error.message}`, error);
-    }
-  }
-
   async getReviews(productId, pagination = {}) {
     try {
       const { page = 1, limit = 20 } = pagination;
@@ -289,7 +259,7 @@ export default class ShoeRepository extends BaseRepository {
         .from('reviews')
         .select('*, profiles(full_name, avatar_url)', { count: 'exact' })
         .eq('shoe_id', productId)
-        .order('created_at', { ascending: false })
+        .order('review_date', { ascending: false })
         .range(offset, offset + limit - 1);
       if (error) throw new DatabaseError('Failed to get reviews', error);
       return {
