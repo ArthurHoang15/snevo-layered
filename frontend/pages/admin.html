@@ -1,0 +1,1791 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Bảng Điều Khiển - Snevo</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <!-- Bootstrap Icons CDN -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+    />
+    <!-- Inter Font -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />    <link href="../assets/css/animations.css" rel="stylesheet" />
+    <link href="../assets/css/components.css" rel="stylesheet" />
+    <link href="../assets/css/responsive.css" rel="stylesheet" />
+    <link href="../assets/css/navbar.css" rel="stylesheet" />
+    <link href="../assets/css/admin.css" rel="stylesheet" />
+    <!-- Custom CSS -->
+  </head>
+  <body>
+    <!-- Navbar -->
+    <div id="navbarRoot" data-navbar-page="admin"></div>
+
+    <!-- Admin Container -->
+    <div class="admin-container">
+      <!-- Sidebar -->
+      <aside class="admin-sidebar" id="adminSidebar">
+        <div class="sidebar-brand">
+          <h4><i class="fas fa-user-shield"></i> Quản Trị</h4>
+        </div>
+        <ul class="sidebar-menu">
+          <li class="sidebar-menu-item">
+            <a href="#" class="sidebar-menu-link" data-section="dashboard">
+              <i class="fas fa-chart-line"></i>
+              <span>Tổng Quan</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a
+              href="#"
+              class="sidebar-menu-link active"
+              data-section="inventory"
+            >
+              <i class="fas fa-boxes"></i>
+              <span>Quản Lý Kho</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a href="#" class="sidebar-menu-link" data-section="history">
+              <i class="fas fa-history"></i>
+              <span>Lịch Sử & Khôi Phục</span>             
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a href="#" class="sidebar-menu-link" data-section="orders">
+              <i class="fas fa-shopping-cart"></i>
+              <span>Quản lý đơn hàng</span>
+              <span class="badge bg-danger ms-auto" id="pendingOrdersCount">0</span>
+            </a>
+          </li>
+          <li class="logout-item mt-4">
+            <a href="#" class="sidebar-menu-link" id="logoutBtn">
+              <i class="fas fa-sign-out-alt"></i>
+              <span>Logout</span>
+            </a>
+          </li>
+        </ul>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="admin-main">
+        <!-- Dashboard Section -->
+        <div
+          id="dashboardSection"
+          class="content-section"
+          style="display: none"
+        >
+          <div class="admin-header">
+            <h1>Tổng Quan</h1>
+            <p>Thống kê và chỉ số cửa hàng</p>
+          </div>
+
+          <!-- Statistics Cards -->
+          <div class="row mb-4">
+            <!-- Pending Orders Card -->
+            <div class="col-md-3">
+              <div class="section-card">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <p class="text-muted small mb-2">Đơn Chờ Duyệt</p>
+                    <h3 class="mb-0" id="dashPendingCount">0</h3>
+                  </div>
+                  <i class="fas fa-hourglass-half text-warning" style="font-size: 2rem;"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Approved Orders Card -->
+            <div class="col-md-3">
+              <div class="section-card">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <p class="text-muted small mb-2">Đã Duyệt</p>
+                    <h3 class="mb-0" id="dashApprovedCount">0</h3>
+                  </div>
+                  <i class="fas fa-check-circle text-info" style="font-size: 2rem;"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Cancelled Orders Card -->
+            <div class="col-md-3">
+              <div class="section-card">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <p class="text-muted small mb-2">Đã Hủy</p>
+                    <h3 class="mb-0" id="dashCancelledCount">0</h3>
+                  </div>
+                  <i class="fas fa-times-circle text-danger" style="font-size: 2rem;"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Total Revenue Card -->
+            <div class="col-md-3">
+              <div class="section-card">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <p class="text-muted small mb-2">Doanh Thu</p>
+                    <h3 class="mb-0" id="dashTotalRevenue">₫0</h3>
+                  </div>
+                  <i class="fas fa-chart-line text-success" style="font-size: 2rem;"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ⭐ NEW: Second Row - Product Metrics -->
+          <div class="row mb-4">
+            <!-- Total Shoes Card -->
+            <div class="col-md-3">
+              <div class="section-card">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <p class="text-muted small mb-2">Tổng Số Giày</p>
+                    <h3 class="mb-0" id="dashTotalShoes">0</h3>
+                  </div>
+                  <i class="fas fa-shoe-prints text-primary" style="font-size: 2rem;"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Total Variants Card -->
+            <div class="col-md-3">
+              <div class="section-card">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <p class="text-muted small mb-2">Tổng Số Biến Thể</p>
+                    <h3 class="mb-0" id="dashTotalVariants">0</h3>
+                  </div>
+                  <i class="fas fa-boxes text-info" style="font-size: 2rem;"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Total Orders Card -->
+            <div class="col-md-3">
+              <div class="section-card">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <p class="text-muted small mb-2">Tổng Đơn Hàng</p>
+                    <h3 class="mb-0" id="dashTotalOrders">0</h3>
+                  </div>
+                  <i class="fas fa-shopping-cart text-success" style="font-size: 2rem;"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Low Stock Items Card -->
+            <div class="col-md-3">
+              <div class="section-card">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <p class="text-muted small mb-2">Hàng Sắp Hết</p>
+                    <h3 class="mb-0" id="dashLowStockItems">0</h3>
+                  </div>
+                  <i class="fas fa-exclamation-triangle text-warning" style="font-size: 2rem;"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Orders -->
+          <div class="section-card">
+            <div class="section-header">
+              <h2 class="section-title">
+                <i class="fas fa-list"></i> Đơn Hàng Gần Đây
+              </h2>
+              <div class="section-actions">
+                <a href="#" class="btn btn-sm btn-outline-secondary" data-section="orders" onclick="adminManager.switchSection('orders')">
+                  <i class="fas fa-arrow-right"></i> Xem Tất Cả
+                </a>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-hover table-sm">
+                <thead class="table-light">
+                  <tr>
+                    <th>Mã Đơn</th>
+                    <th>Khách Hàng</th>
+                    <th>Tổng Tiền</th>
+                    <th>Trạng Thái</th>
+                    <th>Ngày Đặt</th>
+                  </tr>
+                </thead>
+                <tbody id="dashRecentOrdersBody">
+                  <tr>
+                    <td colspan="5" class="text-center py-3 text-muted">
+                      <div class="spinner-border spinner-border-sm text-dark" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Charts Row -->
+          <div class="row mb-4">
+            <!-- Order Status Chart -->
+            <div class="col-lg-6">
+              <div class="section-card">
+                <div style="height: 300px; position: relative;">
+                  <canvas id="orderStatusChart"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- Revenue Chart -->
+            <div class="col-lg-6">
+              <div class="section-card">
+                <div style="height: 300px; position: relative;">
+                  <canvas id="revenueChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ⭐ NEW: Top-Selling Products Chart -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <div class="section-card">
+                <div class="section-header">
+                  <h2 class="section-title">
+                    <i class="fas fa-trophy"></i> Top Selling Products (Last 30 Days)
+                  </h2>
+                </div>
+                <div style="height: 350px; position: relative;">
+                  <canvas id="topSellingChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inventory Management Section -->
+        <div id="inventorySection" class="content-section">
+          <div class="admin-header">
+            <h1>Quản Lý Kho</h1>
+            <p>Quản lý giày, phiên bản và danh mục</p>
+          </div>
+
+          <div class="section-card">
+            <div class="section-header">
+              <h2 class="section-title">
+                <i class="fas fa-shoe-prints"></i>
+                Shoes Products
+              </h2>
+              <div class="section-actions">
+                <button
+                  class="btn btn-primary-custom"
+                  onclick="adminManager.addShoe()"
+                >
+                  <i class="fas fa-plus"></i> Add Product
+                </button>
+              </div>
+            </div>
+            <!--Search & Filters Row -->
+            <div class="row mb-3">
+              <!-- Search Input with Button -->
+              <div class="col-md-4">
+                <div class="input-group">
+                  <span class="input-group-text bg-white">
+                    <i class="fas fa-search"></i>
+                  </span>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="inventorySearchInput"
+                    placeholder="Search by name or ID..."
+                    onkeydown="if(event.key === 'Enter') adminManager.productRenderer.updateSearchFilter()"
+                  />
+                  <button
+                    class="btn btn-outline-secondary"
+                    type="button"
+                    onclick="adminManager.productRenderer.updateSearchFilter()"
+                  >
+                    <i class="fas fa-search"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Category Filter -->
+              <div class="col-md-3">
+                <select
+                  class="form-select"
+                  id="inventoryCategoryFilter"
+                  onchange="adminManager.productRenderer.updateCategoryFilter()"
+                >
+                  <option value="">All Categories</option>
+                  <!-- Populated by JS -->
+                </select>
+              </div>
+
+              <!-- Sort Dropdown -->
+              <div class="col-md-3">
+                <div class="input-group">
+                  <span class="input-group-text bg-white">
+                    <i class="fas fa-sort"></i>
+                  </span>
+                  <select
+                    class="form-select"
+                    id="sortSelect"
+                    onchange="adminManager.productRenderer.updateSort()"
+                  >
+                    <option value="stock_desc" selected>
+                      Stock: High to Low
+                    </option>
+                    <option value="stock_asc">Stock: Low to High</option>
+                    <option value="name_asc">Name: A → Z</option>
+                    <option value="name_desc">Name: Z → A</option>
+                    <option value="price_asc">Price: Low to High</option>
+                    <option value="price_desc">Price: High to Low</option>
+                  </select>
+                </div>
+              </div>
+              <!-- Clear Filters Button -->
+              <div class="col-md-2">
+                <button
+                  class="btn btn-outline-secondary w-100"
+                  onclick="adminManager.productRenderer.clearFilters()"
+                >
+                  <i class="bi bi-x-circle me-1"></i>Clear
+                </button>
+              </div>
+            </div>
+            <div id="shoesTableContainer">
+              <div class="loading-container">
+                <div class="spinner-border text-dark" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Categories Management -->
+          <div class="section-card">
+            <div class="section-header">
+              <h2 class="section-title">
+                <i class="fas fa-tags"></i>
+                Categories
+              </h2>
+              <div class="section-actions">
+                <button
+                  class="btn btn-primary-custom"
+                  onclick="adminManager.addCategory()"
+                >
+                  <i class="fas fa-plus"></i> Add Category
+                </button>
+              </div>
+            </div>
+            <div id="categoriesTableContainer">
+              <div class="loading-container">
+                <div class="spinner-border text-dark" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- History & Recovery Section -->
+        <div id="historySection" class="content-section" style="display: none">
+          <div class="admin-header">
+            <h1><i class="fas fa-history me-2"></i>Lịch Sử & Khôi Phục</h1>
+            <p>Quản lý mục đã xóa, xem lịch sử nhập hàng và nhật ký hệ thống</p>
+          </div>
+
+          <!-- Tabs Navigation -->
+          <ul class="nav nav-tabs mb-4" id="historyTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link active"
+                id="deleted-products-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#deleted-products"
+                type="button"
+                role="tab"
+              >
+                <i class="bi bi-trash3 me-2"></i>Deleted Products
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link"
+                id="deleted-variants-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#deleted-variants"
+                type="button"
+                role="tab"
+              >
+                <i class="bi bi-boxes me-2"></i>Deleted Variants
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link"
+                id="import-history-tab-main"
+                data-bs-toggle="tab"
+                data-bs-target="#import-history-main"
+                type="button"
+                role="tab"
+              >
+                <i class="bi bi-clock-history me-2"></i>Import History
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link"
+                id="audit-logs-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#audit-logs"
+                type="button"
+                role="tab"
+              >
+                <i class="bi bi-file-text me-2"></i>Audit Logs
+                <span class="badge bg-info ms-2">Coming Soon</span>
+              </button>
+            </li>
+          </ul>
+
+          <!-- Tabs Content -->
+          <div class="tab-content" id="historyTabsContent">
+            <!-- Tab 1: Deleted Products -->
+            <div
+              class="tab-pane fade show active"
+              id="deleted-products"
+              role="tabpanel"
+            >
+              <div class="section-card">
+                <div class="section-header">
+                  <h2 class="section-title">
+                    <i class="bi bi-trash3-fill text-danger"></i> Deleted
+                    Products
+                  </h2>
+                  <div class="section-actions">
+                    <button
+                      class="btn btn-outline-secondary"
+                      onclick="adminManager.historyManager.refreshDeletedProducts()"
+                    >
+                      <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                    </button>
+                    <button
+                      class="btn btn-outline-danger"
+                      onclick="adminManager.historyManager.bulkRestoreProducts()"
+                      disabled
+                      id="bulkRestoreBtn"
+                    >
+                      <i class="bi bi-arrow-counterclockwise me-1"></i>Bulk
+                      Restore
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Search & Filter -->
+                <div class="row mb-3">
+                  <div class="col-md-4">
+                    <div class="input-group">
+                      <span class="input-group-text bg-white"
+                        ><i class="fas fa-search"></i
+                      ></span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="deletedSearchInput"
+                        placeholder="Search by name, ID, or category..."
+                        oninput="adminManager.historyManager.handleSearchInput(this.value)"
+                      />
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <select
+                      class="form-select"
+                      id="deletedCategoryFilter"
+                      onchange="adminManager.historyManager.filterDeletedProducts()"
+                    >
+                      <option value="">All Categories</option>
+                      <!-- Populated by JS -->
+                    </select>
+                  </div>
+                  <div class="col-md-3">
+                    <select
+                      class="form-select"
+                      id="deletedDateFilter"
+                      onchange="adminManager.historyManager.filterDeletedProducts()"
+                    >
+                      <!-- ✅ CHANGE: adminManager → adminManager.historyManager -->
+                      <option value="">All Time</option>
+                      <option value="today">Today</option>
+                      <option value="week">This Week</option>
+                      <option value="month">This Month</option>
+                    </select>
+                  </div>
+                  <div class="col-md-2">
+                    <button
+                      class="btn btn-outline-secondary w-100"
+                      onclick="adminManager.historyManager.clearFilters()"
+                    >
+                      <!-- ✅ CHANGE: adminManager → adminManager.historyManager -->
+                      <i class="bi bi-x-circle me-1"></i>Clear
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Deleted Products Table -->
+                <div id="deletedProductsTableContainer">
+                  <div class="table-responsive">
+                    <table class="table table-hover">
+                      <thead class="table-light">
+                        <tr>
+                          <th width="50">
+                            <input
+                              type="checkbox"
+                              id="selectAllDeleted"
+                              class="form-check-input"
+                            />
+                          </th>
+                          <th width="80">Image</th>
+                          <th>Product Name</th>
+                          <th>Category</th>
+                          <th>Price</th>
+                          <th>Deleted Date</th>
+                          <th>Variants</th>
+                          <th width="120">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody id="deletedProductsTableBody">
+                        <!-- Populated by JS -->
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <!-- Empty State -->
+                <div
+                  id="deletedProductsEmpty"
+                  class="empty-state"
+                  style="display: none"
+                >
+                  <i class="bi bi-inbox display-1 text-success"></i>
+                  <h3>No Deleted Products</h3>
+                  <p class="text-muted">
+                    All products are active. Deleted products will appear here.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab 2: Deleted Variants -->
+            <div class="tab-pane fade" id="deleted-variants" role="tabpanel">
+              <div class="section-card">
+                <!-- Header with Stats -->
+                <div
+                  class="d-flex justify-content-between align-items-center mb-4"
+                >
+                  <div>
+                    <h4 class="mb-1">🗑️ Deleted Variants Management</h4>
+                    <p class="text-muted mb-0">
+                      Manage and restore deleted product variants
+                    </p>
+                  </div>
+                  <div class="d-flex gap-3">
+                    <div class="text-center">
+                      <div
+                        class="fs-4 fw-bold text-danger"
+                        id="deleted-total-count"
+                      >
+                        0
+                      </div>
+                      <small class="text-muted">Total Deleted</small>
+                    </div>
+                    <div class="text-center">
+                      <div
+                        class="fs-4 fw-bold text-success"
+                        id="deleted-restorable-count"
+                      >
+                        0
+                      </div>
+                      <small class="text-muted">Restorable</small>
+                    </div>
+                    <div class="text-center">
+                      <div
+                        class="fs-4 fw-bold text-warning"
+                        id="deleted-blocked-count"
+                      >
+                        0
+                      </div>
+                      <small class="text-muted">Blocked</small>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Filters Section -->
+                <div class="card mb-4 border-0 shadow-sm">
+                  <div class="card-body">
+                    <div class="row g-3">
+                      <!-- Search -->
+                      <div class="col-md-4">
+                        <div class="input-group">
+                          <span class="input-group-text bg-white">
+                            <i class="bi bi-search"></i>
+                          </span>
+                          <input
+                            type="text"
+                            class="form-control"
+                            id="deleted-search-input"
+                            placeholder="Search shoes or SKU..."
+                          />
+                        </div>
+                      </div>
+
+                      <!-- Color Filter -->
+                      <div class="col-md-2">
+                        <select class="form-select" id="deleted-color-filter">
+                          <option value="">All Colors</option>
+                        </select>
+                      </div>
+
+                      <!-- Size Filter -->
+                      <div class="col-md-2">
+                        <select class="form-select" id="deleted-size-filter">
+                          <option value="">All Sizes</option>
+                        </select>
+                      </div>
+
+                      <!-- Status Filter -->
+                      <div class="col-md-2">
+                        <select class="form-select" id="deleted-status-filter">
+                          <option value="">All Status</option>
+                          <option value="restorable">✅ Restorable</option>
+                          <option value="blocked">❌ Blocked</option>
+                        </select>
+                      </div>
+
+                      <!-- Shoe Status Filter -->
+                      <div class="col-md-2">
+                        <select
+                          class="form-select"
+                          id="deleted-shoe-status-filter"
+                        >
+                          <option value="">All Shoes</option>
+                          <option value="active">Active Shoes</option>
+                          <option value="deleted">Deleted Shoes</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Active Filters Display -->
+                    <div id="deleted-active-filters" class="mt-3"></div>
+                  </div>
+                </div>
+
+                <!-- ✅ 1. LOADING STATE -->
+                <div id="deleted-variants-loading" class="text-center py-5">
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                  <p class="text-muted mt-2">Loading deleted variants...</p>
+                </div>
+
+                <!-- ✅ 2. EMPTY STATE (Hidden by default) -->
+                <div
+                  id="deleted-variants-empty"
+                  class="text-center py-5 d-none"
+                >
+                  <i class="bi bi-inbox display-1 text-muted"></i>
+                  <h5 class="mt-3 text-muted">No Deleted Variants</h5>
+                  <p class="text-muted">All variants are currently active.</p>
+                </div>
+
+                <!-- ✅ 3. DATA CONTAINER -->
+                <div id="deleted-variants-list"></div>
+              </div>
+            </div>
+
+            <!-- Tab 3: Import History (ALL PRODUCTS) -->
+            <div class="tab-pane fade" id="import-history-main" role="tabpanel">
+              <div class="section-card">
+                <div class="section-header">
+                  <h2 class="section-title">
+                    <i class="bi bi-clock-history me-2"></i>
+                    Global Import History
+                  </h2>
+                  <div class="section-actions">
+                    <button
+                      class="btn btn-outline-secondary"
+                      onclick="adminManager.historyManager.exportImportHistory()"
+                    >
+                      <i class="bi bi-download me-1"></i>Export CSV
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Summary Stats Cards -->
+                <div class="row mb-4">
+                  <div class="col-md-3">
+                    <div class="card border-0 shadow-sm">
+                      <div class="card-body">
+                        <div class="d-flex align-items-center">
+                          <div class="flex-grow-1">
+                            <p class="text-muted mb-1 small">Total Imports</p>
+                            <h3 class="mb-0" id="globalTotalImportsCount">0</h3>
+                          </div>
+                          <div class="text-primary">
+                            <i class="bi bi-box-seam fs-2"></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="card border-0 shadow-sm">
+                      <div class="card-body">
+                        <div class="d-flex align-items-center">
+                          <div class="flex-grow-1">
+                            <p class="text-muted mb-1 small">Total Quantity</p>
+                            <h3 class="mb-0" id="globalTotalImportQty">0</h3>
+                          </div>
+                          <div class="text-success">
+                            <i class="bi bi-cart-plus fs-2"></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="card border-0 shadow-sm">
+                      <div class="card-body">
+                        <div class="d-flex align-items-center">
+                          <div class="flex-grow-1">
+                            <p class="text-muted mb-1 small">Total Value</p>
+                            <h3 class="mb-0" id="globalTotalImportValue">$0</h3>
+                          </div>
+                          <div class="text-warning">
+                            <i class="bi bi-currency-dollar fs-2"></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="card border-0 shadow-sm">
+                      <div class="card-body">
+                        <div class="d-flex align-items-center">
+                          <div class="flex-grow-1">
+                            <p class="text-muted mb-1 small">Products</p>
+                            <h3 class="mb-0" id="globalUniqueProductsCount">
+                              0
+                            </h3>
+                          </div>
+                          <div class="text-info">
+                            <i class="bi bi-bag fs-2"></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Filters Row -->
+                <div class="row mb-3">
+                  <!-- Smart Search -->
+                  <div class="col-md-4">
+                    <div class="input-group">
+                      <span class="input-group-text bg-white">
+                        <i class="bi bi-search"></i>
+                      </span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="globalImportSearchInput"
+                        placeholder="Search by shoe name, color, or size..."
+                        onkeydown="if(event.key === 'Enter') adminManager.historyManager.filterGlobalImportHistory()"
+                      />
+                      <button
+                        class="btn btn-outline-secondary"
+                        type="button"
+                        onclick="adminManager.historyManager.filterGlobalImportHistory()"
+                      >
+                        <i class="bi bi-search"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Date Range: Start -->
+                  <div class="col-md-2">
+                    <input
+                      type="date"
+                      class="form-control"
+                      id="globalImportStartDate"
+                      onchange="adminManager.historyManager.filterGlobalImportHistory()"
+                      placeholder="Start Date"
+                    />
+                  </div>
+
+                  <!-- Date Range: End -->
+                  <div class="col-md-2">
+                    <input
+                      type="date"
+                      class="form-control"
+                      id="globalImportEndDate"
+                      onchange="adminManager.historyManager.filterGlobalImportHistory()"
+                      placeholder="End Date"
+                    />
+                  </div>
+
+                  <!-- User Filter -->
+                  <div class="col-md-3">
+                    <select
+                      class="form-select"
+                      id="globalImportUserFilter"
+                      onchange="adminManager.historyManager.filterGlobalImportHistory()"
+                    >
+                      <option value="">All Users</option>
+                      <!-- Populated by JS -->
+                    </select>
+                  </div>
+
+                  <!-- Clear Button -->
+                  <div class="col-md-1">
+                    <button
+                      class="btn btn-outline-secondary w-100"
+                      onclick="adminManager.historyManager.clearGlobalImportFilters()"
+                      title="Clear Filters"
+                    >
+                      <i class="bi bi-x-circle"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Import History Table Container -->
+                <div id="importHistoryContainerMain">
+                  <div class="loading-container">
+                    <div class="spinner-border text-dark" role="status">
+                      <span class="visually-hidden">Loading...</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Empty State -->
+                <div
+                  id="globalImportHistoryEmpty"
+                  class="empty-state"
+                  style="display: none"
+                >
+                  <i class="bi bi-inbox display-1 text-muted"></i>
+                  <h3>No Import History</h3>
+                  <p class="text-muted">
+                    No imports found matching your filters.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab 4: Audit Logs -->
+            <div class="tab-pane fade" id="audit-logs" role="tabpanel">
+              <div class="section-card">
+                <div class="alert alert-info">
+                  <i class="bi bi-info-circle me-2"></i>
+                  <strong>Coming Soon:</strong> Audit logs for tracking all
+                  admin actions will be available soon.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Orders Management Section -->
+        <div id="ordersSection" class="content-section" style="display: none">
+          <div class="admin-header">
+            <h1><i class="fas fa-shopping-cart me-2"></i>Quản Lý Đơn Hàng</h1>
+            <p>Xem, duyệt và quản lý đơn hàng khách hàng</p>
+          </div>
+
+          <!-- Orders Section Card -->
+          <div class="section-card">
+            <div class="section-header">
+              <h2 class="section-title">
+                <i class="fas fa-list"></i> Tất Cả Đơn Hàng
+              </h2>
+              <div class="section-actions">
+                <button class="btn btn-outline-secondary" onclick="window.adminLoadOrders()">
+                  <i class="fas fa-sync-alt"></i> Làm Mới
+                </button>
+              </div>
+            </div>
+
+            <!-- Filters & Search -->
+            <div class="row mb-4">
+              <div class="col-md-4">
+                <div class="input-group">
+                  <span class="input-group-text bg-white">
+                    <i class="fas fa-search"></i>
+                  </span>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    id="orderSearchInput" 
+                    placeholder="Search by Order ID..."
+                    onkeydown="if(event.key === 'Enter') window.adminLoadOrders(1)"
+                  />
+                  <button 
+                    class="btn btn-outline-secondary" 
+                    type="button" 
+                    onclick="window.adminLoadOrders(1)"
+                  >
+                    <i class="fas fa-search"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="input-group">
+                  <span class="input-group-text bg-white">
+                    <i class="fas fa-filter"></i>
+                  </span>
+                  <select class="form-select" id="orderStatusFilter" onchange="window.adminLoadOrders(1)">
+                    <option value="">Tất Cả Trạng Thái</option>
+                    <option value="pending">Chờ Xác Nhận</option>
+                    <option value="processing">Đã Xác Nhận</option>
+                    <option value="delivered">Hoàn Thành</option>
+                    <option value="cancelled">Đã Hủy</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-md-2">
+                <button 
+                  class="btn btn-outline-secondary w-100" 
+                  onclick="document.getElementById('orderSearchInput').value = ''; document.getElementById('orderStatusFilter').value = ''; window.adminLoadOrders(1);"
+                >
+                  <i class="bi bi-x-circle me-1"></i>Clear
+                </button>
+              </div>
+            </div>
+
+            <!-- Orders Table -->
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead class="table-light">
+                  <tr>
+                    <th>Mã Đơn</th>
+                    <th>Khách Hàng</th>
+                    <th>Tổng Tiền</th>
+                    <th>Trạng Thái</th>
+                    <th>Thanh Toán</th>
+                    <th>Ngày Đặt</th>
+                    <th>Thao Tác</th>
+                  </tr>
+                </thead>
+                <tbody id="ordersTableBody">
+                  <tr>
+                    <td colspan="7" class="text-center py-5">
+                      <div class="loading-container">
+                        <div class="spinner-border text-dark" role="status">
+                          <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3 text-muted">Loading orders...</p>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <!-- Pagination Controls -->
+            <div class="mt-3" id="ordersPagination">
+              <!-- Pagination will be rendered here by JavaScript -->
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- ==================== IMPORT MODAL ==================== -->
+    <div
+      class="modal fade"
+      id="importModal"
+      tabindex="-1"
+      aria-labelledby="importModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+          <!-- Modal Header -->
+          <div class="modal-header bg-success text-white">
+            <div>
+              <h5 class="modal-title" id="importModalLabel">
+                <i class="bi bi-box-arrow-in-down"></i> Import Stock
+              </h5>
+              <small id="importShoeInfo" class="text-light opacity-75"></small>
+            </div>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+
+          <!-- Modal Body with Tabs -->
+          <div class="modal-body">
+            <!-- Tabs Navigation -->
+            <ul class="nav nav-tabs mb-3" id="importTabs" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button
+                  class="nav-link active"
+                  id="import-form-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#import-form"
+                  type="button"
+                  role="tab"
+                >
+                  <i class="bi bi-pencil-square"></i> Import Form
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button
+                  class="nav-link"
+                  id="import-history-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#import-history"
+                  type="button"
+                  role="tab"
+                >
+                  <i class="bi bi-clock-history"></i> Import History
+                  <span id="importHistoryCount" class="badge bg-secondary ms-1"
+                    >0</span
+                  >
+                </button>
+              </li>
+            </ul>
+
+            <!-- Tabs Content -->
+            <div class="tab-content" id="importTabsContent">
+              <!-- ===== Tab 1: Import Form ===== -->
+              <div
+                class="tab-pane fade show active"
+                id="import-form"
+                role="tabpanel"
+              >
+                <!-- Shoe Info Card -->
+                <div class="card mb-3 bg-light border-success">
+                  <div class="card-body">
+                    <div class="row align-items-center">
+                      <div class="col-auto">
+                        <img
+                          id="importShoeImage"
+                          src=""
+                          width="80"
+                          class="rounded border"
+                        />
+                      </div>
+                      <div class="col">
+                        <h6 id="importShoeName" class="mb-1 fw-bold"></h6>
+                        <p class="text-muted mb-1">
+                          <small
+                            ><strong>Category:</strong>
+                            <span id="importShoeCategory"></span
+                          ></small>
+                        </p>
+                        <p class="mb-0">
+                          <span class="badge bg-info">
+                            Current Total Stock:
+                            <strong id="importCurrentStock">0</strong> units
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <button
+                    class="btn btn-outline-primary btn-sm"
+                    onclick="adminManager.openVariantGenerator()"
+                  >
+                    <i class="fas fa-plus-circle me-1"></i>
+                    Add More Variants
+                  </button>
+                </div>
+                <!-- Variants Selection Table -->
+                <div class="table-responsive">
+                  <table class="table table-hover table-sm">
+                    <thead class="table-light">
+                      <tr>
+                        <th width="50">
+                          <input
+                            type="checkbox"
+                            id="selectAllVariants"
+                            class="form-check-input"
+                            onchange="adminManager.toggleAllVariants(this.checked)"
+                          />
+                        </th>
+                        <th>Color</th>
+                        <th>Size</th>
+                        <th>Current Stock</th>
+                        <th width="120">Import Qty</th>
+                        <th width="120">Import Price</th>
+                      </tr>
+                    </thead>
+                    <tbody id="importVariantsTable">
+                      <!-- Populated by JS: renderImportVariantsTable() -->
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- Import Notes -->
+                <div class="mb-3">
+                  <label for="importNotes" class="form-label">
+                    <i class="bi bi-sticky"></i> Import Notes (Optional)
+                  </label>
+                  <textarea
+                    class="form-control"
+                    id="importNotes"
+                    rows="2"
+                    placeholder="e.g., Weekly restock, Black Friday inventory..."
+                  ></textarea>
+                </div>
+
+                <!-- Import Summary -->
+                <div class="alert alert-success border-success mb-0">
+                  <h6 class="mb-2">
+                    <i class="bi bi-info-circle"></i> Import Summary
+                  </h6>
+                  <div class="row">
+                    <div class="col-md-4">
+                      <small><strong>Selected Variants:</strong></small
+                      ><br />
+                      <span id="summaryVariants" class="fs-5 fw-bold">0</span>
+                    </div>
+                    <div class="col-md-4">
+                      <small><strong>Total Quantity:</strong></small
+                      ><br />
+                      <span id="summaryQuantity" class="fs-5 fw-bold">0</span>
+                      units
+                    </div>
+                    <div class="col-md-4">
+                      <small><strong>Total Cost:</strong></small
+                      ><br />
+                      <span class="fs-5 fw-bold text-success"
+                        >$<span id="summaryCost">0.00</span></span
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ===== Tab 2: Import History ===== -->
+              <div class="tab-pane fade" id="import-history" role="tabpanel">
+                <div id="importHistoryContainer">
+                  <p class="text-muted text-center py-5">
+                    <i
+                      class="bi bi-clock-history display-4 d-block mb-3 text-secondary"
+                    ></i>
+                    <span class="fs-6"
+                      >Switch to this tab to view import history</span
+                    >
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal Footer -->
+          <div class="modal-footer bg-light">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              <i class="bi bi-x-circle"></i> Cancel
+            </button>
+            <button
+              type="button"
+              class="btn btn-success"
+              id="submitImportBtn"
+              onclick="adminManager.submitBatchImport()"
+            >
+              <i class="bi bi-check-circle"></i> Submit Import
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Variant Generator Modal - 2 Column Layout -->
+    <div
+      class="modal fade"
+      id="variantGeneratorModal"
+      tabindex="-1"
+      aria-hidden="true"
+      style="z-index: 1070"
+    >
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header bg-gradient-primary text-white">
+            <h5 class="modal-title">
+              <i class="bi bi-gear-fill me-2"></i>
+              Tạo Phiên Bản Sản Phẩm
+            </h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body p-4">
+            <!-- Product Info Card -->
+            <div class="card bg-light border-0 mb-4 shadow-sm">
+              <div class="card-body">
+                <div class="row align-items-center">
+                  <div class="col-md-6">
+                    <h6 class="mb-1 fw-bold">
+                      <i class="bi bi-box-seam text-primary me-2"></i>
+                      <span id="variantGen_ShoeName">Tên Sản Phẩm</span>
+                    </h6>
+                    <small class="text-muted">
+                      Mã Sản Phẩm:
+                      <span id="variantGen_ShoeID" class="badge bg-secondary"
+                        >-</span
+                      >
+                    </small>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label small mb-1 fw-bold">
+                      <i class="bi bi-tag-fill me-1"></i>
+                      Giá Mặc Định
+                    </label>
+                    <div class="input-group">
+                      <span class="input-group-text">₫</span>
+                      <input
+                        type="number"
+                        class="form-control"
+                        id="variantGen_DefaultPrice"
+                        value="0"
+                        min="0"
+                        step="1000"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Selection Grid - 2 Columns -->
+            <div class="row g-4 mb-4">
+              <!-- Colors Column -->
+              <div class="col-md-6">
+                <div class="card h-100 border-primary border-2">
+                  <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0">
+                      <i class="bi bi-palette-fill me-2"></i>
+                      Chọn Màu Sắc
+                    </h6>
+                  </div>
+                  <div
+                    class="card-body"
+                    style="max-height: 400px; overflow-y: auto"
+                  >
+                    <div id="colorSelectionContainer">
+                      <!-- Colors rendered here as checkboxes -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Sizes Column -->
+              <div class="col-md-6">
+                <div class="card h-100 border-success border-2">
+                  <div class="card-header bg-success text-white">
+                    <h6 class="mb-0">
+                      <i class="bi bi-rulers me-2"></i>
+                      Chọn Kích Thước
+                    </h6>
+                  </div>
+                  <div
+                    class="card-body"
+                    style="max-height: 400px; overflow-y: auto"
+                  >
+                    <div id="sizeSelectionContainer">
+                      <!-- Sizes rendered here as checkboxes -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Preview/Status -->
+            <div id="variantGen_Status" class="mb-4">
+              <div class="alert alert-info border-0 shadow-sm mb-0">
+                <i class="bi bi-info-circle me-2"></i>
+                Vui lòng chọn ít nhất một màu sắc và một kích thước để tạo phiên bản
+              </div>
+            </div>
+
+            <!-- Summary Card -->
+            <div class="card border-0 shadow-sm mb-3">
+              <div class="card-body">
+                <h6 class="card-title text-muted mb-3">
+                  <i class="bi bi-graph-up me-2"></i>
+                  Tổng Quan
+                </h6>
+                <div class="row text-center g-3">
+                  <div class="col-4">
+                    <div
+                      class="p-3 bg-primary bg-opacity-10 rounded-3 border border-primary border-opacity-25"
+                    >
+                      <div
+                        class="fs-2 fw-bold text-primary mb-1"
+                        id="variantGen_Colors"
+                      >
+                        0
+                      </div>
+                      <small class="text-muted d-block">Màu Sắc</small>
+                    </div>
+                  </div>
+                  <div class="col-4">
+                    <div
+                      class="p-3 bg-success bg-opacity-10 rounded-3 border border-success border-opacity-25"
+                    >
+                      <div
+                        class="fs-2 fw-bold text-success mb-1"
+                        id="variantGen_Sizes"
+                      >
+                        0
+                      </div>
+                      <small class="text-muted d-block">Kích Thước</small>
+                    </div>
+                  </div>
+                  <div class="col-4">
+                    <div
+                      class="p-3 bg-danger bg-opacity-10 rounded-3 border border-danger border-opacity-25"
+                    >
+                      <div
+                        class="fs-2 fw-bold text-danger mb-1"
+                        id="variantGen_Total"
+                      >
+                        0
+                      </div>
+                      <small class="text-muted d-block">Phiên Bản Mới</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Default Stock -->
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <label class="form-label fw-bold mb-2">
+                  <i class="bi bi-box-seam text-warning me-2"></i>
+                  Số Lượng Tồn Kho Ban Đầu (Tùy Chọn)
+                </label>
+                <input
+                  type="number"
+                  class="form-control form-control-lg"
+                  id="variantGen_DefaultStock"
+                  value="0"
+                  min="0"
+                  placeholder="Để 0 nếu không có tồn kho ban đầu"
+                />
+                <small class="form-text text-muted d-block mt-2">
+                  <i class="bi bi-lightbulb me-1"></i>
+                  Thiết lập số lượng tồn kho ban đầu cho tất cả các phiên bản. Có thể điều chỉnh riêng lẻ sau.
+                </small>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer bg-light">
+            <button
+              type="button"
+              class="btn btn-secondary btn-lg"
+              data-bs-dismiss="modal"
+            >
+              <i class="bi bi-x-circle me-2"></i>
+              Hủy
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary btn-lg px-4"
+              onclick="adminManager.variantGenerator.submitGenerateVariants()"
+            >
+              <i class="bi bi-check-circle me-2"></i>
+              Tạo Phiên Bản
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDER DETAIL MODAL -->
+    <div class="modal fade" id="orderDetailModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header bg-info text-white">
+            <h5 class="modal-title">
+              <i class="fas fa-box me-2"></i>Chi Tiết Đơn Hàng
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div id="orderDetailContent"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+      <div
+        id="notificationToast"
+        class="toast"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+      >
+        <div class="toast-header">
+          <i
+            id="toastIcon"
+            class="bi bi-check-circle-fill text-success me-2"
+          ></i>
+          <strong id="toastTitle" class="me-auto">Success</strong>
+          <small>Just now</small>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="toast"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="toast-body">
+          <span id="toastMessage">Operation completed successfully!</span>
+        </div>
+      </div>
+    </div>
+    <!-- 🆕 PRODUCT FORM MODAL (Add/Edit) -->
+    <div
+      class="modal fade"
+      id="productFormModal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <!-- Modal Header -->
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title" id="productFormModalTitle">
+              <i class="bi bi-plus-circle me-2"></i> Thêm Sản Phẩm Mới
+            </h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+
+          <!-- Modal Body -->
+          <div class="modal-body p-4">
+            <form id="productFormForm">
+              <div class="row g-3">
+                <!-- Product Name -->
+                <div class="col-md-12">
+                  <label for="productName" class="form-label fw-bold">
+                    <i class="bi bi-tag me-1"></i> Tên Sản Phẩm *
+                  </label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="productName"
+                    placeholder="VD: Nike Air Max 270"
+                    required
+                  />
+                </div>
+
+                <!-- Category -->
+                <div class="col-md-6">
+                  <label for="productCategory" class="form-label fw-bold">
+                    <i class="bi bi-folder me-1"></i> Danh Mục *
+                  </label>
+                  <select class="form-select" id="productCategory" required>
+                    <option value="">-- Chọn Danh Mục --</option>
+                  </select>
+                </div>
+
+                <!-- Price -->
+                <div class="col-md-6">
+                  <label for="productPrice" class="form-label fw-bold">
+                    <i class="bi bi-currency-dollar me-1"></i> Giá Cơ Bản (VND)
+                    *
+                  </label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="productPrice"
+                    placeholder="2500000"
+                    min="0"
+                    step="1000"
+                    required
+                  />
+                </div>
+
+                <!-- Description -->
+                <div class="col-md-12">
+                  <label for="productDescription" class="form-label fw-bold">
+                    <i class="bi bi-text-paragraph me-1"></i> Mô Tả
+                  </label>
+                  <textarea
+                    class="form-control"
+                    id="productDescription"
+                    rows="4"
+                    placeholder="Nhập mô tả sản phẩm..."
+                  ></textarea>
+                </div>
+
+                <!-- Image Upload -->
+                <div class="col-md-12">
+                  <label for="productImage" class="form-label fw-bold">
+                    <i class="bi bi-image me-1"></i> Hình Ảnh *
+                  </label>
+                  <input
+                    type="file"
+                    class="form-control"
+                    id="productImage"
+                    accept="image/jpeg,image/png,image/webp,image/jpg,image/gif,image/avif"
+                  />
+                  <small class="form-text text-muted">
+                    Dung lượng tối đa: 5MB. Định dạng: JPG, PNG, WEBP, GIF, AVIF
+                  </small>
+                </div>
+
+                <!-- Image Preview -->
+                <div class="col-md-12">
+                  <div class="text-center">
+                    <img
+                      id="productImagePreview"
+                      src=""
+                      alt="Preview"
+                      class="img-thumbnail"
+                      style="max-width: 300px; max-height: 300px; display: none"
+                    />
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- Modal Footer -->
+          <div class="modal-footer bg-light">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              <i class="bi bi-x-circle me-2"></i> Hủy
+            </button>
+            <button type="button" class="btn btn-primary" id="submitProductBtn">
+              <i class="bi bi-plus-circle me-2"></i> Thêm Sản Phẩm
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- ✅ EDIT VARIANT MODAL -->
+    <div
+      class="modal fade"
+      id="editVariantModal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header bg-warning text-dark">
+            <h5 class="modal-title">
+              <i class="bi bi-pencil-square me-2"></i>
+              Edit Variant
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <!-- Variant Info (Read-only) -->
+            <div class="card border-0 bg-light mb-3">
+              <div class="card-body">
+                <h6 class="card-title mb-3">
+                  <i class="bi bi-info-circle text-primary me-2"></i>
+                  Variant Information
+                </h6>
+                <div class="row g-2">
+                  <div class="col-12">
+                    <strong>SKU:</strong>
+                    <span
+                      id="edit_variant_sku"
+                      class="ms-2 text-primary"
+                    ></span>
+                  </div>
+                  <div class="col-6">
+                    <strong>Color:</strong>
+                    <span id="edit_variant_color" class="ms-2"></span>
+                  </div>
+                  <div class="col-6">
+                    <strong>Size:</strong>
+                    <span id="edit_variant_size" class="ms-2"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Edit Form -->
+            <form id="editVariantForm">
+              <!-- Price Input (Editable) -->
+              <div class="mb-3">
+                <label for="edit_variant_price" class="form-label">
+                  <i class="bi bi-currency-dollar text-success me-2"></i>
+                  <strong>Variant Price (VND)</strong>
+                </label>
+                <input
+                  type="number"
+                  class="form-control form-control-lg"
+                  id="edit_variant_price"
+                  placeholder="Enter new price..."
+                  min="0"
+                  step="1000"
+                />
+                <small class="form-text text-muted">
+                  <i class="bi bi-info-circle me-1"></i>
+                  Leave empty to keep current price
+                </small>
+              </div>
+
+              <!-- ✅ Stock Input (READ-ONLY) -->
+              <div class="mb-3">
+                <label for="edit_variant_stock" class="form-label">
+                  <i class="bi bi-box-seam text-secondary me-2"></i>
+                  <strong>Current Stock Quantity</strong>
+                </label>
+                <input
+                  type="number"
+                  class="form-control form-control-lg bg-light"
+                  id="edit_variant_stock"
+                  readonly
+                  disabled
+                  style="cursor: not-allowed"
+                />
+                <small class="form-text text-muted">
+                  <i class="bi bi-lock-fill me-1"></i>
+                  <strong>Warning:</strong> Stock can only be changed via
+                  Import system
+                </small>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              <i class="bi bi-x-circle me-2"></i>
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="btn btn-warning"
+              onclick="adminManager.variantGenerator.submitEditVariant()"
+            >
+              <i class="bi bi-save me-2"></i>
+              Save Changes
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Chart.js for Dashboard Visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../assets/js/config.js"></script>
+    
+    <!-- NavbarLoaded-->
+    <script type="module" src="../assets/js/ApiClient.js"></script>
+    <script type="module" src="../assets/js/AuthManager.js"></script>
+    <script type="module" src="../assets/js/NavbarManager.js"></script>
+    <script type="module" src="../assets/js/animations.js"></script>
+
+    <!-- Admin Manager -->
+    <script src="../assets/js/admin/AdminCore.js"></script>
+    <script src="../assets/js/admin/AdminAPI.js"></script>
+    <script src="../assets/js/admin/AdminUtils.js"></script>
+    <script src="../assets/js/admin/AdminProductRenderer.js"></script>
+    <script src="../assets/js/admin/AdminVariantRenderer.js"></script>
+    <script src="../assets/js/admin/AdminCategory.js"></script>
+    <script src="../assets/js/admin/AdminImport.js"></script>
+    <script src="../assets/js/admin/AdminImportHistory.js"></script>
+    <script src="../assets/js/admin/AdminVariantGenerator.js"></script>
+    <script src="../assets/js/admin/AdminProduct.js"></script>
+    <script src="../assets/js/admin/AdminActions.js"></script>
+    <script src="../assets/js/admin/AdminHistory.js"></script>
+    
+    <!-- ✅ NEW: Dashboard and Order Management Modules -->
+    <script src="../assets/js/admin/AdminDashboard.js"></script>
+    <script src="../assets/js/admin/AdminOrderManagement.js"></script>
+    
+    <script src="../assets/js/admin/AdminManager.js"></script>
+
+    <script>
+        // ⭐ ROLE-BASED ACCESS CONTROL - Block non-sellers from accessing admin page
+        window.addEventListener('DOMContentLoaded', async function() {
+            console.log('🔐 Checking user role for admin access...');
+            
+            // Wait for AuthService to initialize
+            if (window.authService) {
+                await window.authService.initialize();
+                
+                const currentUser = window.authService.currentUser;
+                const userRole = window.authService.userRole;
+                
+                console.log('👤 Current user:', currentUser?.email, '| Role:', userRole);
+                
+                // Block access if user is not a seller
+                if (!currentUser || userRole !== 'seller') {
+                    console.warn('⛔ Access denied: User is not a seller');
+                    alert('Access Denied: This page is only accessible to sellers/administrators.');
+                    window.location.href = 'index.html';
+                    return;
+                }
+                
+                console.log('✅ Seller access granted');
+            } else {
+                console.warn('⚠️ AuthService not available, redirecting...');
+                window.location.href = 'index.html';
+            }
+        });
+    </script>
+  </body>
+</html>

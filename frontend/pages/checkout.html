@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Snevo</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/navbar.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+    <link rel="stylesheet" href="../assets/css/responsive.css">
+    <link rel="stylesheet" href="../assets/css/animations.css">
+    <link rel="stylesheet" href="../assets/css/checkout.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="../assets/images/favicon.ico">
+    
+</head>
+<body>
+    <!-- Unified Navbar Root -->
+    <div id="navbarRoot" data-navbar-page="checkout" data-navbar-hide-cart="true"></div>
+
+    <!-- Main Content -->
+    <main style="margin-top: 76px;">
+        <div class="checkout-container py-5">
+            <div class="row">
+                <div class="col-12">
+                    <h1 class="mb-4">Thanh Toán</h1>
+                </div>
+            </div>
+
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step active" data-step="1">
+                    <i class="fas fa-shopping-bag"></i><br>Giỏ Hàng
+                </div>
+                <div class="step" data-step="2">
+                    <i class="fas fa-map-marker-alt"></i><br>Địa Chỉ Giao Hàng
+                </div>
+                <div class="step" data-step="3">
+                    <i class="fas fa-truck"></i><br>Phương Thức Vận Chuyển
+                </div>
+                <div class="step" data-step="4">
+                    <i class="fas fa-credit-card"></i><br>Thanh Toán
+                </div>
+                <div class="step" data-step="5">
+                    <i class="fas fa-check-circle"></i><br>Xem Lại & Xác Nhận
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Main Content -->
+                <div class="col-lg-8">
+                    <!-- Step 1: Cart Review -->
+                    <div class="checkout-step active" id="step-1">
+                        <h3 class="mb-4">Xem Lại Giỏ Hàng</h3>
+                        <div id="cartReviewContainer"></div>
+                        <div class="d-flex justify-content-between btn-step">
+                            <a href="cart.html" class="btn btn-outline-secondary">Quay Lại</a>
+                            <button class="btn btn-continue" id="btnNextStep1">Tiếp Tục</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Shipping Address -->
+                    <div class="checkout-step" id="step-2">
+                        <h3 class="mb-4">Chọn Địa Chỉ Giao Hàng</h3>
+                        <div id="addressesContainer"></div>
+                        <a href="#" class="btn btn-outline-secondary btn-sm mb-3" id="btnAddNewAddress">
+                            <i class="fas fa-plus"></i> Thêm Địa Chỉ Mới
+                        </a>
+                        <div class="d-flex justify-content-between btn-step">
+                            <button class="btn btn-outline-secondary" id="btnPrevStep2">Quay Lại</button>
+                            <button class="btn btn-continue" id="btnNextStep2" disabled>Tiếp Tục</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Delivery Options -->
+                    <div class="checkout-step" id="step-3">
+                        <h3 class="mb-4">Chọn Phương Thức Vận Chuyển</h3>
+                        <div id="deliveryOptionsContainer"></div>
+                        <div class="d-flex justify-content-between btn-step">
+                            <button class="btn btn-outline-secondary" id="btnPrevStep3">Quay Lại</button>
+                            <button class="btn btn-continue" id="btnNextStep3" disabled>Tiếp Tục</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Payment Method -->
+                    <div class="checkout-step" id="step-4">
+                        <h3 class="mb-4">Chọn Phương Thức Thanh Toán</h3>
+                        <div id="paymentMethodsContainer"></div>
+                        <div id="paymentFormContainer" class="mt-4"></div>
+                        <div class="d-flex justify-content-between btn-step">
+                            <button class="btn btn-outline-secondary" id="btnPrevStep4">Quay Lại</button>
+                            <button class="btn btn-continue" id="btnNextStep4" disabled>Tiếp Tục</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 5: Review & Confirm -->
+                    <div class="checkout-step" id="step-5">
+                        <h3 class="mb-4">Xem Lại Đơn Hàng</h3>
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5>Tổng Quan Đơn Hàng</h5>
+                            </div>
+                            <div class="card-body" id="orderSummaryReview"></div>
+                        </div>
+                        <div class="d-flex justify-content-between btn-step gap-3">
+                            <button class="btn btn-outline-secondary" id="btnPrevStep5">Quay Lại</button>
+                            <div class="flex-grow-1 d-flex gap-2 justify-content-end">
+                                <button class="btn btn-outline-danger" id="btnCancelCheckout">
+                                    <i class="fas fa-times"></i> Hủy Đơn Hàng
+                                </button>
+                                <button class="btn btn-success btn-lg" id="btnConfirmOrder">
+                                    <i class="fas fa-check"></i> Xác Nhận & Thanh Toán
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Summary Sidebar -->
+                <div class="col-lg-4">
+                    <div class="order-summary">
+                        <h5 class="mb-3">Tổng Đơn Hàng</h5>
+                        <div class="summary-row">
+                            <span>Tạm tính</span>
+                            <span id="summarySubtotal">₫0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Phí vận chuyển</span>
+                            <span id="summaryShipping">₫0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Thuế</span>
+                            <span id="summaryTax">₫0</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span>Tổng cộng</span>
+                            <span id="summaryTotal">₫0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add Address Modal -->
+    <div class="modal fade" id="addAddressModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Thêm Địa Chỉ Mới</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addAddressForm">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Tên người nhận *</label>
+                                    <input type="text" class="form-control" id="recipientName" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Số điện thoại *</label>
+                                    <input type="tel" class="form-control" id="phoneNumber" required>
+                                </div>
+                            </div>                        <div class="mb-3">
+                            <label class="form-label">Street Address *</label>
+                            <input type="text" class="form-control" id="street" required>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Ward *</label>
+                                <input type="text" class="form-control" id="ward" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">District *</label>
+                                <input type="text" class="form-control" id="district" required>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">City *</label>
+                                <input type="text" class="form-control" id="city" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">State/Province *</label>
+                                <input type="text" class="form-control" id="state" required>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Zip Code</label>
+                                <input type="text" class="form-control" id="zipCode">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Country</label>
+                                <input type="text" class="form-control" id="country" value="Vietnam">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="isDefault">
+                                <label class="form-check-label" for="isDefault">
+                                    Set as default address
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="btnSaveAddress">Save Address</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Configuration -->
+    <script src="../assets/js/config.js"></script>
+    
+    <!-- Custom Scripts -->
+    <script type="module" src="../assets/js/ApiClient.js"></script>
+    <script type="module" src="../assets/js/AuthManager.js"></script>
+    <script type="module" src="../assets/js/NavbarManager.js"></script>
+    <script type="module" src="../assets/js/Application.js"></script>
+    <script type="module" src="../assets/js/CheckoutManager.js"></script>
+    <script src="../assets/js/animations.js"></script>
+</body>
+</html>

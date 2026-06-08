@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Products - Snevo</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Custom CSS -->
+    <link href="../assets/css/navbar.css" rel="stylesheet" />
+    <link href="../assets/css/footer.css" rel="stylesheet" />
+    <link href="../assets/css/products.css" rel="stylesheet" />
+    <link href="../assets/css/components.css" rel="stylesheet" />
+
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="../assets/images/favicon.ico" />
+  </head>
+
+  <body>
+    <!-- Unified Navbar Root -->
+    <div id="navbarRoot" data-navbar-page="products"></div>
+
+    <!-- Page Header -->
+    <section class="page-header bg-light py-5" style="margin-top: 76px">
+      <div class="container">
+        <div class="row align-items-center">
+          <div class="col-md-6">
+            <h1 class="page-title mb-2">Sản Phẩm</h1>
+            <p class="page-subtitle text-muted mb-0">
+              Khám phá bộ sưu tập giày thể thao cao cấp dành cho nhà vô địch
+            </p>
+          </div>
+          <div class="col-md-6 text-md-end"></div>
+        </div>
+      </div>
+    </section>
+    <!-- Products Section -->
+    <section class="products-section py-5">
+      <div class="container">
+        <!-- Mobile Filter Toggle Button -->
+        <div class="mobile-filter-toggle">
+          <button class="btn-filter-toggle" id="mobileFilterToggle">
+            <div>
+              <i class="fas fa-sliders-h"></i>
+              <span>Bộ Lọc</span>
+            </div>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+        </div>
+
+        <div class="row">
+          <!-- Sidebar Filters -->
+          <div class="col-lg-3 col-md-4">
+            <div class="filters-sidebar" id="filtersSidebar">
+              <div class="filters-header d-flex justify-content-between">
+                <div class="filters-header">
+                  <button class="btn-close-filters" id="closeFilters">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+                <!--<button
+                  class="btn btn-sm "
+                  id="clearFilters"
+                >
+                  Clear All
+                </button> -->
+              </div>
+              <div class="filters-body">
+                <!-- Category Filter -->
+                <div class="filter-group mb-4">
+                  <h6 class="filter-title">Danh Mục</h6>
+                  <div class="filter-options" id="categoryFilters"></div>
+                </div>
+
+                <!-- Price Filter -->
+                <div class="filter-group mb-4">
+                  <h6 class="filter-title">Khoảng Giá</h6>
+                  <div class="price-range-filter">
+                    <div
+                      class="price-range-slider-track"
+                      id="sliderTrack"
+                      style="width: 100%; left: 0"
+                    ></div>
+                    <input
+                      type="range"
+                      class="form-range"
+                      id="minPriceRange"
+                      min="0"
+                      max="10000000"
+                      value="0"
+                      step="10000"
+                    />
+                    <input
+                      type="range"
+                      class="form-range"
+                      id="maxPriceRange"
+                      min="0"
+                      max="10000000"
+                      value="10000000"
+                      step="10000"
+                    />
+                  </div>
+                  <div class="price-values">
+                    <span id="minPriceDisplay">Min</span> -
+                    <span id="maxPriceDisplay">Max</span>
+                  </div>
+                </div>
+
+                <!-- Size Filter -->
+                <div class="filter-group mb-4">
+                  <h6 class="filter-title">Kích Thước</h6>
+                  <div class="size-options" id="sizeFilters"></div>
+                </div>
+
+                <!-- Color Filter -->
+                <div class="filter-group mb-4">
+                  <h6 class="filter-title">Màu Sắc</h6>
+                  <div class="color-options" id="colorFilters"></div>
+                </div>
+
+                <!-- Brand Filter -->
+                <div class="filter-group mb-4">
+                  <h6 class="filter-title">Thương Hiệu</h6>
+                  <div class="filter-options" id="brandFilters">
+                    <div class="form-check">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        value="nike"
+                        id="brandNike"
+                      />
+                      <label class="form-check-label" for="brandNike"
+                        >Nike</label
+                      >
+                    </div>
+                    <div class="form-check">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        value="adidas"
+                        id="brandAdidas"
+                      />
+                      <label class="form-check-label" for="brandAdidas"
+                        >Adidas</label
+                      >
+                    </div>
+                    <div class="form-check">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        value="jordan"
+                        id="brandJordan"
+                      />
+                      <label class="form-check-label" for="brandJordan"
+                        >Jordan</label
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Products Grid -->
+          <div class="col-lg-9 col-md-8">
+            <!-- Toolbar -->
+            <div class="products-toolbar mb-4">
+              <div class="row align-items-center">
+                <div class="col-md-6 ps-0">
+                  <div class="results-info">
+                    <span id="resultsCount"></span>
+                  </div>
+                </div>
+                <div class="col-md-6 pe-0">
+                  <div class="d-flex align-items-center justify-content-md-end">
+                    <!-- Sort Dropdown -->
+                    <div class="me-0 pe-0">
+                      <select
+                        class="form-select form-select-sm"
+                        id="sortSelect"
+                      >
+                        <option value="featured">Sắp xếp: Nổi bật</option>
+                        <option value="price_low">Giá: Thấp đến Cao</option>
+                        <option value="price_high">Giá: Cao đến Thấp</option>
+                        <option value="name_asc">Tên: A đến Z</option>
+                        <option value="name_desc">Tên: Z đến A</option>
+                        <option value="newest">Mới nhất</option>
+                      </select>
+                    </div>
+
+                    <!-- View Toggle 
+                    <div class="btn-group" role="group">
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary btn-sm active"
+                        id="gridView"
+                        title="Grid View"
+                      >
+                        <i class="fas fa-th"></i>
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary btn-sm"
+                        id="listView"
+                        title="List View"
+                      >
+                        <i class="fas fa-list"></i>
+                      </button>
+                    </div> -->
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Loading State -->
+            <div
+              class="loading-container text-center py-5"
+              id="loadingContainer"
+            >
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="mt-3 text-muted">Đang tải sản phẩm...</p>
+            </div>
+
+            <!-- Products Grid Container -->
+            <div
+              class="products-grid row"
+              id="productsGrid"
+              style="display: none"
+            >
+              <!-- Products will be loaded dynamically -->
+            </div>
+
+            <!-- No Results -->
+            <div
+              class="no-results text-center py-5"
+              id="noResults"
+              style="display: none"
+            >
+              <i class="fas fa-search fa-3x text-muted mb-3"></i>
+              <h4>Không tìm thấy sản phẩm</h4>
+              <p class="text-muted">
+                Thử điều chỉnh bộ lọc hoặc từ khóa tìm kiếm
+              </p>
+            </div>
+
+            <!-- Pagination -->
+            <nav aria-label="Products pagination" class="mt-5">
+              <ul class="pagination justify-content-center" id="pagination">
+                <!-- Pagination will be generated dynamically -->
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- Filter Backdrop -->
+    <div class="filter-backdrop" id="filterBackdrop"></div>
+    <!-- Unified Footer Root -->
+    <div id="footerRoot"></div>
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Configuration -->
+    <script src="../assets/js/config.js"></script>
+
+    <!-- Custom Scripts -->
+    <script type="module" src="../assets/js/ApiClient.js"></script>
+    <script type="module" src="../assets/js/AuthManager.js"></script>
+    <script type="module" src="../assets/js/NavbarManager.js"></script>
+    <script type="module" src="../assets/js/FooterManager.js"></script>
+    <script type="module" src="../assets/js/ProductManager.js"></script>
+    <script
+      type="module"
+      src="../assets/js/EmailVerificationNotice.js"
+    ></script>
+    <script type="module" src="../assets/js/Application.js"></script>
+    <script type="module" src="../assets/js/auth-persistence.js"></script>
+    <script type="module" src="../assets/js/animations.js"></script>
+    <script>
+      // Mobile Filter Toggle Logic
+      document.addEventListener("DOMContentLoaded", function () {
+        const mobileFilterToggle =
+          document.getElementById("mobileFilterToggle");
+        const filtersSidebar = document.getElementById("filtersSidebar");
+        const closeFilters = document.getElementById("closeFilters");
+        const filterBackdrop = document.getElementById("filterBackdrop");
+
+        if (mobileFilterToggle) {
+          mobileFilterToggle.addEventListener("click", function () {
+            filtersSidebar.classList.add("active");
+            filterBackdrop.classList.add("active");
+            document.body.style.overflow = "hidden";
+          });
+        }
+
+        function closeFilterMenu() {
+          filtersSidebar.classList.remove("active");
+          filterBackdrop.classList.remove("active");
+          document.body.style.overflow = "";
+        }
+
+        if (closeFilters) {
+          closeFilters.addEventListener("click", closeFilterMenu);
+        }
+
+        if (filterBackdrop) {
+          filterBackdrop.addEventListener("click", closeFilterMenu);
+        }
+      });
+    </script>
+  </body>
+</html>

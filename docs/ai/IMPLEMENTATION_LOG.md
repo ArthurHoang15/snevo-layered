@@ -427,3 +427,47 @@ Append one entry after each completed implementation task that changes code or d
 **Remaining notes:**
 - The prompt's literal `rg "req|res|writeHead|end\\(" backend/business/services` pattern is too broad and matches substrings such as `required`, `address`, and `restore`; use a token-aware scan such as `rg "\\b(req|res)\\b|writeHead|end\\(" backend/business/services`.
 - Reference pricing behavior was not available locally because `SNEVO_REFERENCE_PATH` was not set and no `Snevo-reference` folder was found; Phase 3 uses injectable pricing policy defaults of zero tax and zero shipping until the reference rule is confirmed.
+
+## 2026-06-08 - Phase 4 & 5 Presentation, Server, and Bootstrap
+
+**Actor:** Hoang / AI-assisted
+
+**Prompt summary:** Implement Phase 4 (presentation layer: controllers, middlewares, and routes) and Phase 5 (bootstrap: DI container, server, frontend copy, scripts, schema, and docs).
+
+**Implemented:**
+- Added 14 presentation controllers: `BaseController.js`, `ProductController.js`, `CategoryController.js`, `OrderController.js`, `CartController.js`, `PaymentController.js`, `ProfileController.js`, `AddressController.js`, `ReviewController.js`, `VariantController.js`, `ColorController.js`, `SizeController.js`, `ImportController.js`, `AdminController.js`.
+- Implemented 4 middleware files: `auth.js`, `cors.js`, `upload.js`, `validation.js` in `backend/presentation/middleware/`.
+- Implemented 16 routes in `backend/presentation/routes/` for product, category, order, admin order, cart, payment, authentication, users, profiles, addresses, review, variant, color, size, import, and admin.
+- Created `backend/container.js` as the DI composition root, instantiating all repositories, services, and controllers with constructor injection.
+- Ported and simplified `backend/server.js` to initialize the DI container, parse HTTP requests, route requests to controllers, and serve frontend static assets.
+- Copied frontend static files (`assets`, `components`, `pages`) from `Snevo/frontend/` to `snevo-layered/frontend/`.
+- Copied database `schema.sql` and `scripts` folder from reference to targets.
+- Updated `package.json` with all dependencies and scripts from reference repository.
+- Updated `supabase.js` config to support hybrid exports (both function call and instance call styles) for backward compatibility.
+- Updated `container.js` with try-catch block for supabase initialization to prevent boot failure in mock mode when `.env` is absent.
+
+**Architecture impact:**
+- Successfully established layered architecture separation: Presentation Layer (`controllers`, `routes`, `middleware`) handles HTTP, Business Layer (`services`) handles business logic, Data Layer (`repositories`) handles query primitives, and Infrastructure handles database configuration and low-level details.
+- Ensured DI container serves as the single composition root.
+- Decoupled database connection failure from server boot, allowing fallback/static file serving in development without `.env`.
+
+**Files changed/added:**
+- `backend/presentation/controllers/*` (14 controllers)
+- `backend/presentation/middleware/*` (4 middlewares)
+- `backend/presentation/routes/*` (16 routes)
+- `backend/container.js`
+- `backend/server.js`
+- `package.json`
+- `backend/infrastructure/database/supabase.js`
+- `schema.sql`
+- `scripts/*` (7 scripts)
+- `frontend/*` (assets, components, pages)
+- `docs/ai/PHASE_STATUS.md`
+- `docs/ai/IMPLEMENTATION_LOG.md`
+
+**Verification:**
+- Verified that controllers do not contain `setModels`, `data/repositories` imports, or direct `infrastructure/database` imports.
+- Verified that services do not contain any presentation concerns (`req`, `res`, `writeHead`).
+- Ran `npm install` and generated config using `npm run dev:config`.
+- Successfully booted the server using `node backend/server.js` on port 3001, verifying no import, syntax, or wiring errors.
+

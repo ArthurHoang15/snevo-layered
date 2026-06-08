@@ -65,4 +65,12 @@ export class SupabaseConfig {
 
 export const supabaseConfig = new SupabaseConfig();
 
-export default supabaseConfig;
+export default function createSupabaseConfig() {
+  return supabaseConfig;
+}
+
+// Attach singleton methods to the function for backward compatibility
+createSupabaseConfig.getClient = () => supabaseConfig.getClient();
+createSupabaseConfig.getAdminClient = () => supabaseConfig.getAdminClient();
+createSupabaseConfig.init = () => supabaseConfig.init();
+
