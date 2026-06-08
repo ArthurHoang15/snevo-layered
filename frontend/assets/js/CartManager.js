@@ -70,8 +70,10 @@ class CartManager {
         try {
             console.log('🔄 Loading cart from API...');
             const res = await this.api.getCart();
-            console.log('📦 API response:', res);
-            this.items = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
+            const resData = res?.data || res;
+            this.items = Array.isArray(resData?.items) 
+                ? resData.items 
+                : (Array.isArray(resData) ? resData : []);
             console.log('✅ Parsed items:', this.items);
             await this.render();
             await this.updateTotals();

@@ -63,6 +63,42 @@ export default class OrderService {
     return this.orderRepository.findByUserId(userId, status, Number.parseInt(page, 10), Number.parseInt(limit, 10));
   }
 
+  async previewOrder(userId) {
+    requireDependency(this.cartRepository, 'Cart');
+    const cartItems = await this.cartRepository.listByUser(userId);
+
+    const items = cartItems.map(item => {
+      const v = item.shoe_variants || {};
+      const shoe = v.shoes || {};
+      const color = v.colors || {};
+      const size = v.sizes || {};
+
+      return {
+        cart_id: item.cart_id,
+        variant_id: item.variant_id,
+        quantity: item.quantity,
+        price_at_add: item.price_at_add,
+        shoe_name: shoe.shoe_name,
+        variant_image: shoe.image_url,
+        color_name: color.color_name,
+        size_label: size.size_value
+      };
+    });
+
+    const totals = this.calculateTotals(items.map(item => ({
+      price_per_unit: item.price_at_add,
+      quantity: item.quantity
+    })));
+
+    return {
+      items,
+      subtotal: totals.subtotal,
+      tax_amount: totals.tax_amount,
+      shipping_cost: totals.shipping_cost,
+      total: totals.total_amount
+    };
+  }
+
   async getOrderById(orderId, userId = null) {
     requireDependency(this.orderRepository, 'Order');
     const id = toPositiveInteger(orderId, 'order_id');

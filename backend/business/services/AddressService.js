@@ -88,7 +88,7 @@ export default class AddressService {
 
   _validateAddressPayload(addressData, { requireCoreFields }) {
     const recipientName = addressData.recipient_name ?? addressData.full_name;
-    const addressLine = addressData.address_line ?? addressData.address;
+    const addressLine = addressData.address_line ?? addressData.address ?? addressData.street;
     const phone = addressData.phone_number ?? addressData.phone;
     const errors = [];
     const coreFields = [
@@ -120,7 +120,8 @@ export default class AddressService {
       ward: addressData.ward,
       district: addressData.district,
       city: addressData.city,
-      province: addressData.province,
+      state: addressData.state ?? addressData.province,
+      province: addressData.province ?? addressData.state,
       postal_code: addressData.postal_code,
       country: addressData.country,
       is_default: addressData.is_default

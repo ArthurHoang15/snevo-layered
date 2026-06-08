@@ -164,6 +164,21 @@ export default class ShoeVariantRepository extends BaseRepository {
     }
   }
 
+  async findAllDeletedWithDetails() {
+    try {
+      const { data, error } = await this.db
+        .from(this.tableName)
+        .select('*, shoes(shoe_id, shoe_name, image_url, is_active), colors(color_id, color_name, hex_code), sizes(size_id, size_value, size_type)')
+        .eq('is_active', false)
+        .order('variant_id', { ascending: true });
+      if (error) throw new DatabaseError('Failed to find all deleted variants', error);
+      return data || [];
+    } catch (error) {
+      if (error instanceof DatabaseError) throw error;
+      throw new DatabaseError(`Find all deleted variants failed: ${error.message}`, error);
+    }
+  }
+
   async getAllShoesWithDeletedVariants() {
     try {
       const { data, error } = await this.db

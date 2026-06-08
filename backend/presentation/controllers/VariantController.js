@@ -205,4 +205,13 @@ export default class VariantController extends BaseController {
             this.sendResponse(res, deleted, 'Deleted variants fetched');
         });
     }
+
+    // GET /api/variants/deleted-all
+    async getAllDeletedVariants(req, res) {
+        return this.handleRequest(req, res, async () => {
+            this.requireRole(req, ['seller', 'admin']);
+            const result = await this.variantService.getAllDeletedGroupedByShoe();
+            this.sendResponse(res, result, 'All deleted variants fetched');
+        });
+    }
 }

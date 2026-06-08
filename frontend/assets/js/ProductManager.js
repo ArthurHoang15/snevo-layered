@@ -1094,10 +1094,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   ) {
     try {
       const cartRes = await window.cartAPI.getCart();
-      const cartItems = Array.isArray(cartRes?.data)
-        ? cartRes.data
-        : Array.isArray(cartRes)
-        ? cartRes
+      const resData = cartRes?.data || cartRes;
+      const cartItems = Array.isArray(resData?.items)
+        ? resData.items
+        : Array.isArray(resData)
+        ? resData
         : [];
       const cartCount = cartItems.length;
       window.navbarManager.updateCartCount(cartCount);

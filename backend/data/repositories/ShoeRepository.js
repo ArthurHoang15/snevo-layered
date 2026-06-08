@@ -90,7 +90,8 @@ export default class ShoeRepository extends BaseRepository {
       const page = Number.parseInt(pagination.page ?? 1, 10);
       const limit = Number.parseInt(pagination.limit ?? 20, 10);
       const offset = (page - 1) * limit;
-      const joinType = include_no_variants ? '' : '!inner';
+      const parsedIncludeNoVariants = include_no_variants === true || include_no_variants === 'true';
+      const joinType = parsedIncludeNoVariants ? '' : '!inner';
 
       let query = this.db
         .from(this.tableName)
@@ -129,7 +130,7 @@ export default class ShoeRepository extends BaseRepository {
       if (max_price) query = query.lte('base_price', max_price);
       if (search) query = query.or(`shoe_name.ilike.%${search}%,description.ilike.%${search}%`);
 
-      if (!include_no_variants) {
+      if (!parsedIncludeNoVariants) {
         const colorIds = this._normalizeArrayFilter(color_ids);
         const sizeIds = this._normalizeArrayFilter(size_ids);
         if (colorIds.length > 0) query = query.in('shoe_variants.color_id', colorIds);

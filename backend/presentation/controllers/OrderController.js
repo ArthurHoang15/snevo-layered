@@ -43,8 +43,7 @@ export default class OrderController extends BaseController {
     async previewOrder(req, res) {
         return this.handleRequest(req, res, async () => {
             const user = this.requireAuth(req);
-            // Preview uses the cart service's summary
-            const result = await this.orderService.listUserOrders(user.id, { page: 1, limit: 1 });
+            const result = await this.orderService.previewOrder(user.id);
             this.sendResponse(res, result, 'Order preview');
         });
     }

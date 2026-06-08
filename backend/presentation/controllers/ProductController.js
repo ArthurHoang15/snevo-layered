@@ -15,7 +15,7 @@ export default class ProductController extends BaseController {
         return this.handleRequest(req, res, async () => {
             const pagination = this.getPaginationParams(req);
             const filters = this.getFilterParams(req, [
-                'category_id', 'min_price', 'max_price', 'brand', 'is_active'
+                'category_id', 'min_price', 'max_price', 'brand', 'is_active', 'include_no_variants'
             ]);
             const { sort, order } = pagination;
 

@@ -25,7 +25,7 @@ import sizeRoutes from './presentation/routes/sizes.js';
 import importRoutes from './presentation/routes/imports.js';
 import adminRoutes from './presentation/routes/admin.js';
 import cartRoutes from './presentation/routes/cart.js';
-import reviewRoutes from './presentation/routes/reviews.js';
+import reviewRoutes, { productReviewRoutes } from './presentation/routes/reviews.js';
 import orderRoutes from './presentation/routes/orders.js';
 import adminOrderRoutes from './presentation/routes/adminOrders.js';
 import authRoutes from './presentation/routes/auth.js';
@@ -113,7 +113,15 @@ class Server {
             req.query = parsedUrl.query || {};
 
             // Modular Routes dispatching
-            if (pathname.startsWith('/api/reviews') || pathname.match(/^\/api\/products\/\d+\/reviews/)) {
+            const productReviewMatch = pathname.match(/^\/api\/products\/(\d+)\/reviews(.*)$/);
+            if (productReviewMatch) {
+                const shoeId = productReviewMatch[1];
+                const subPath = productReviewMatch[2] || '/';
+                await productReviewRoutes(req, res, this.controllers.review, shoeId, subPath, this.sendError.bind(this));
+                return;
+            }
+
+            if (pathname.startsWith('/api/reviews')) {
                 await reviewRoutes(req, res, this.controllers.review, pathname, this.sendError.bind(this));
                 return;
             }

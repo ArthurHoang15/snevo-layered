@@ -207,6 +207,45 @@ export default class VariantService {
     return data;
   }
 
+  async getAllDeletedGroupedByShoe() {
+    requireDependency(this.variantRepository, 'Variant');
+    const variants = await this.variantRepository.findAllDeletedWithDetails();
+    
+    const groups = {};
+    for (const v of variants) {
+      const shoeId = v.shoe_id;
+      if (!groups[shoeId]) {
+        groups[shoeId] = {
+          shoe: v.shoes ? {
+            shoe_id: v.shoes.shoe_id,
+            shoe_name: v.shoes.shoe_name,
+            image_url: v.shoes.image_url,
+            is_active: v.shoes.is_active
+          } : { shoe_id: shoeId, shoe_name: 'Unknown Product', is_active: false },
+          deleted_variants: []
+        };
+      }
+      
+      groups[shoeId].deleted_variants.push({
+        variant_id: v.variant_id,
+        shoe_id: v.shoe_id,
+        color_id: v.color_id,
+        size_id: v.size_id,
+        sku: v.sku,
+        stock_quantity: v.stock_quantity,
+        variant_price: v.variant_price,
+        is_active: v.is_active,
+        colors: v.colors,
+        sizes: v.sizes
+      });
+    }
+    
+    return {
+      shoes: Object.values(groups),
+      statistics: {}
+    };
+  }
+
   async _ensureReferencedRecords(data) {
     if (data.shoe_id && this.shoeRepository) {
       const product = await this.shoeRepository.findById(data.shoe_id);

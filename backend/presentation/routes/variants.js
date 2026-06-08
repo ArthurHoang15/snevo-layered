@@ -59,6 +59,14 @@ export default async function variantRoutes(req, res, controller, pathname, send
             return controller.getVariantsByColor(req, res);
         }
 
+        // GET /api/variants/deleted-all
+        if (variantPath === '/deleted-all' && req.method === 'GET') {
+            const authResult = await authMiddleware.authenticate(req, res);
+            if (!authResult || !authResult.success) return;
+            req.user = authResult.user;
+            return controller.getAllDeletedVariants(req, res);
+        }
+
         // GET /api/variants/deleted/:shoeId
         if (segments[0] === 'deleted' && segments.length === 2 && req.method === 'GET') {
             const authResult = await authMiddleware.authenticate(req, res);
