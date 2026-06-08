@@ -67,7 +67,7 @@ class ProfileManager {
             if (response.ok) {
                 const data = await response.json();
                 console.log('✅ Profile loaded from API:', data);
-                this.currentUser = data.user;
+                this.currentUser = data.data;
                 await this.updateProfileDisplay();
                 await this.loadAddresses();
                 return this.currentUser;

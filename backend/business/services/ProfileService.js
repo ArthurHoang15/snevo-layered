@@ -65,8 +65,10 @@ export default class ProfileService {
       username: profileData.username,
       full_name: profileData.full_name,
       email,
-      phone_number: phone,
-      avatar_url: profileData.avatar_url
+      phone: phone,
+      avatar_url: profileData.avatar_url,
+      date_of_birth: profileData.date_of_birth,
+      gender: profileData.gender
     });
 
     if (!allowEmpty && Object.keys(data).length === 0) {
