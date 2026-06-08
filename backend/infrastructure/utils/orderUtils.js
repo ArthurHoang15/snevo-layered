@@ -1,7 +1,7 @@
 import { ORDER_STATUS, PAYMENT_STATUS, PAYMENT_METHODS } from './constants.js';
 
 /**
- * Generate mock payment details based on method
+ * Generate mock payment details based on metho
  * @param {string} method - Payment method
  * @param {Object} inputData - Form data from checkout
  * @returns {string} - JSON string to store in transaction_id (max 100 chars)
