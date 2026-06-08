@@ -3,6 +3,9 @@ class CheckoutManager {
     constructor() {
         this.currentStep = 1;
         this.currentOrderId = null;  // Track order ID for cancellation
+        this.submittingOrder = false;
+        this.submittingAddress = false;
+        this.cancellingCheckout = false;
         this.orderData = {
             items: [],
             subtotal: 0,
@@ -603,16 +606,20 @@ class CheckoutManager {
     }
 
     async confirmOrder() {
+        if (this.submittingOrder) return;
         if (!this.orderData.address_id) {
             alert('Please select a shipping address');
             return;
         }
 
         try {
+            this.submittingOrder = true;
             // Disable button
             const btn = document.getElementById('btnConfirmOrder');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            }
 
             // Collect payment details based on payment method
             let payment_details = null;
@@ -695,6 +702,7 @@ class CheckoutManager {
             alert(message);
             window.location.href = `orders.html?order_id=${orderId}`;
         } catch (err) {
+            this.submittingOrder = false;
             console.error('❌ Order confirmation failed:', err);
             
             // Extract validation errors if available
@@ -706,20 +714,26 @@ class CheckoutManager {
             
             alert('Failed to confirm order: ' + errorMsg);
             const btn = document.getElementById('btnConfirmOrder');
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check"></i> Confirm & Pay';
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check"></i> Confirm & Pay';
+            }
         }
     }
 
     async cancelCheckout() {
+        if (this.cancellingCheckout) return;
         if (!confirm('Are you sure you want to cancel this checkout? Stock will be released and you can shop again.')) {
             return;
         }
 
         try {
+            this.cancellingCheckout = true;
             const btn = document.getElementById('btnCancelCheckout');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cancelling...';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cancelling...';
+            }
 
             // If an order was created, cancel it (which will trigger stock release via database trigger)
             if (this.currentOrderId) {
@@ -732,11 +746,14 @@ class CheckoutManager {
             // Redirect to products page
             window.location.href = 'products.html';
         } catch (err) {
+            this.cancellingCheckout = false;
             console.error('❌ Error cancelling checkout:', err);
             alert('Failed to cancel checkout: ' + (err.message || 'Unknown error'));
             const btn = document.getElementById('btnCancelCheckout');
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-times"></i> Cancel Checkout';
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-times"></i> Cancel Checkout';
+            }
         }
     }
 
@@ -788,6 +805,7 @@ class CheckoutManager {
     }
 
     async saveNewAddress() {
+        if (this.submittingAddress) return;
         const form = document.getElementById('addAddressForm');
         if (!form.checkValidity()) {
             form.reportValidity();
@@ -795,9 +813,12 @@ class CheckoutManager {
         }
 
         try {
+            this.submittingAddress = true;
             const btn = document.getElementById('btnSaveAddress');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            }
 
             const addressData = {
                 recipient_name: document.getElementById('recipientName').value,
@@ -835,12 +856,16 @@ class CheckoutManager {
                 alert('Failed to save address: ' + (result.message || 'Unknown error'));
             }
         } catch (err) {
+            this.submittingAddress = false;
             console.error('❌ Error saving address:', err);
             alert('Failed to save address: ' + (err.message || 'Unknown error'));
         } finally {
+            this.submittingAddress = false;
             const btn = document.getElementById('btnSaveAddress');
-            btn.disabled = false;
-            btn.innerHTML = 'Save Address';
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = 'Save Address';
+            }
         }
     }
 
