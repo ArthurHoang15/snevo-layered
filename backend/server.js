@@ -19,7 +19,7 @@ import buildContainer from './container.js';
 // Import modular routes
 import productRoutes from './presentation/routes/products.js';
 import variantRoutes from './presentation/routes/variants.js';
-import categoryRoutes from './pressentation/routes/categories.js';
+import categoryRoutes from './presentation/routes/categories.js';
 import colorRoutes from './presentation/routes/colors.js';
 import sizeRoutes from './presentation/routes/sizes.js';
 import importRoutes from './presentation/routes/imports.js';

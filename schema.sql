@@ -253,68 +253,62 @@ CREATE TABLE wishlists (
 -- ===================================
 
 
--- Profiles indexes
-CREATE INDEX idx_profiles_username ON profiles(username);
-CREATE INDEX idx_profiles_role ON profiles(role);
-CREATE INDEX idx_profiles_created_at ON profiles(created_at);
-
-
 -- Addresses indexes
-CREATE INDEX idx_addresses_user_id ON addresses(user_id);
-CREATE INDEX idx_addresses_is_default ON addresses(is_default);
+CREATE INDEX IF NOT EXISTS idx_addresses_user_id ON addresses(user_id);
+CREATE INDEX IF NOT EXISTS idx_addresses_is_default ON addresses(is_default);
 
 
 -- Categories indexes
-CREATE INDEX idx_categories_is_active ON categories(is_active);
+CREATE INDEX IF NOT EXISTS idx_categories_is_active ON categories(is_active);
 
 
 -- Shoes indexes
-CREATE INDEX idx_shoes_category_id ON shoes(category_id);
-CREATE INDEX idx_shoes_name ON shoes(shoe_name);
-CREATE INDEX idx_shoes_is_active ON shoes(is_active);
-CREATE INDEX idx_shoes_base_price ON shoes(base_price);
+CREATE INDEX IF NOT EXISTS idx_shoes_category_id ON shoes(category_id);
+CREATE INDEX IF NOT EXISTS idx_shoes_name ON shoes(shoe_name);
+CREATE INDEX IF NOT EXISTS idx_shoes_is_active ON shoes(is_active);
+CREATE INDEX IF NOT EXISTS idx_shoes_base_price ON shoes(base_price);
 
 
 -- Shoe variants indexes
-CREATE INDEX idx_variants_shoe_id ON shoe_variants(shoe_id);
-CREATE INDEX idx_variants_sku ON shoe_variants(sku);
-CREATE INDEX idx_variants_stock ON shoe_variants(stock_quantity);
-CREATE INDEX idx_variants_is_active ON shoe_variants(is_active);
+CREATE INDEX IF NOT EXISTS idx_variants_shoe_id ON shoe_variants(shoe_id);
+CREATE INDEX IF NOT EXISTS idx_variants_sku ON shoe_variants(sku);
+CREATE INDEX IF NOT EXISTS idx_variants_stock ON shoe_variants(stock_quantity);
+CREATE INDEX IF NOT EXISTS idx_variants_is_active ON shoe_variants(is_active);
 
 
 -- Imports indexes
-CREATE INDEX idx_imports_user_id ON imports(user_id);
-CREATE INDEX idx_imports_supplier_id ON imports(supplier_id);
-CREATE INDEX idx_imports_variant_id ON imports(variant_id);
-CREATE INDEX idx_imports_date ON imports(import_date);
+CREATE INDEX IF NOT EXISTS idx_imports_user_id ON imports(user_id);
+CREATE INDEX IF NOT EXISTS idx_imports_supplier_id ON imports(supplier_id);
+CREATE INDEX IF NOT EXISTS idx_imports_variant_id ON imports(variant_id);
+CREATE INDEX IF NOT EXISTS idx_imports_date ON imports(import_date);
 
 
 -- Orders indexes
-CREATE INDEX idx_orders_user_id ON orders(user_id);
-CREATE INDEX idx_orders_status ON orders(status);
-CREATE INDEX idx_orders_date ON orders(order_date);
+CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id);
+CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
+CREATE INDEX IF NOT EXISTS idx_orders_date ON orders(order_date);
 
 
 -- Order items indexes
-CREATE INDEX idx_order_items_order_id ON order_items(order_id);
-CREATE INDEX idx_order_items_variant_id ON order_items(variant_id);
+CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);
+CREATE INDEX IF NOT EXISTS idx_order_items_variant_id ON order_items(variant_id);
 
 
 -- Payments indexes
-CREATE INDEX idx_payments_order_id ON payments(order_id);
-CREATE INDEX idx_payments_status ON payments(status);
-CREATE INDEX idx_payments_date ON payments(payment_date);
+CREATE INDEX IF NOT EXISTS idx_payments_order_id ON payments(order_id);
+CREATE INDEX IF NOT EXISTS idx_payments_status ON payments(status);
+CREATE INDEX IF NOT EXISTS idx_payments_date ON payments(payment_date);
 
 
 -- Reviews indexes
-CREATE INDEX idx_reviews_shoe_id ON reviews(shoe_id);
-CREATE INDEX idx_reviews_user_id ON reviews(user_id);
-CREATE INDEX idx_reviews_rating ON reviews(rating);
+CREATE INDEX IF NOT EXISTS idx_reviews_shoe_id ON reviews(shoe_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_user_id ON reviews(user_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_rating ON reviews(rating);
 
 
 -- Wishlists indexes
-CREATE INDEX idx_wishlists_user_id ON wishlists(user_id);
-CREATE INDEX idx_wishlists_shoe_id ON wishlists(shoe_id);
+CREATE INDEX IF NOT EXISTS idx_wishlists_user_id ON wishlists(user_id);
+CREATE INDEX IF NOT EXISTS idx_wishlists_shoe_id ON wishlists(shoe_id);
 
 
 -- ===================================
@@ -552,12 +546,13 @@ WITH CHECK (
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO db_nike.profiles (user_id, username, full_name, role, avatar_url)
+    INSERT INTO db_nike.profiles (user_id, username, full_name, role, avatar_url, email)
     VALUES (
         NEW.id,
         COALESCE(
             NEW.raw_user_meta_data->>'username',
             NEW.raw_user_meta_data->>'preferred_username',
+            NEW.raw_user_meta_data->>'name',
             SPLIT_PART(NEW.email, '@', 1)
         ),
         COALESCE(
@@ -566,11 +561,14 @@ BEGIN
             SPLIT_PART(NEW.email, '@', 1)
         ),
         COALESCE(NEW.raw_user_meta_data->>'role', 'customer'),
-        NEW.raw_user_meta_data->>'avatar_url'
+        NEW.raw_user_meta_data->>'avatar_url',
+        NEW.email
     )
     ON CONFLICT (user_id) DO UPDATE SET
-        full_name = COALESCE(EXCLUDED.full_name, profiles.full_name),
-        avatar_url = COALESCE(EXCLUDED.avatar_url, profiles.avatar_url),
+        username = COALESCE(EXCLUDED.username, db_nike.profiles.username),
+        full_name = COALESCE(EXCLUDED.full_name, db_nike.profiles.full_name),
+        avatar_url = COALESCE(EXCLUDED.avatar_url, db_nike.profiles.avatar_url),
+        email = COALESCE(EXCLUDED.email, db_nike.profiles.email),
         updated_at = NOW();
     RETURN NEW;
 END;
