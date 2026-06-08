@@ -238,13 +238,25 @@ CREATE TABLE reviews (
 );
 
 
--- Wishlists table (new feature)
 CREATE TABLE wishlists (
     wishlist_id SERIAL PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     shoe_id INTEGER NOT NULL REFERENCES shoes(shoe_id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE(user_id, shoe_id)
+);
+
+
+-- Carts table (used for shopping cart items stored in database)
+CREATE TABLE carts (
+    cart_id SERIAL PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    variant_id INTEGER NOT NULL REFERENCES shoe_variants(variant_id) ON DELETE CASCADE,
+    quantity INTEGER NOT NULL CHECK (quantity > 0 AND quantity <= 99),
+    price_at_add DECIMAL(10,2) NOT NULL CHECK (price_at_add >= 0),
+    added_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(user_id, variant_id)
 );
 
 
@@ -311,6 +323,11 @@ CREATE INDEX IF NOT EXISTS idx_wishlists_user_id ON wishlists(user_id);
 CREATE INDEX IF NOT EXISTS idx_wishlists_shoe_id ON wishlists(shoe_id);
 
 
+-- Carts indexes
+CREATE INDEX IF NOT EXISTS idx_carts_user_id ON carts(user_id);
+CREATE INDEX IF NOT EXISTS idx_carts_variant_id ON carts(variant_id);
+
+
 -- ===================================
 -- 7. Row Level Security (RLS) Policies
 -- ===================================
@@ -324,6 +341,7 @@ ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE wishlists ENABLE ROW LEVEL SECURITY;
+ALTER TABLE carts ENABLE ROW LEVEL SECURITY;
 
 
 -- Profiles policies
@@ -478,6 +496,15 @@ USING (auth.uid() = user_id)
 WITH CHECK (auth.uid() = user_id);
 
 
+-- Carts policies
+ALTER TABLE carts ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can manage their own cart" ON carts;
+CREATE POLICY "Users can manage their own cart"
+ON carts FOR ALL
+USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);
+
+
 -- ===================================
 -- Seller management policies (frontend writes)
 -- ===================================
@@ -610,6 +637,11 @@ CREATE TRIGGER update_shoe_variants_updated_at
 
 CREATE TRIGGER update_orders_updated_at
     BEFORE UPDATE ON orders
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+
+CREATE TRIGGER update_carts_updated_at
+    BEFORE UPDATE ON carts
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 

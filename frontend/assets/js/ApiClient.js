@@ -288,11 +288,29 @@ class ApiClient {
    */
     getAuthToken() {
     try {
-      // ⭐ Try to find Supabase auth token key
+      // ⭐ Try to find Supabase auth token key for the current project
+      let projectRef = "";
+      if (window.SUPABASE_URL) {
+        const match = window.SUPABASE_URL.match(/https:\/\/([^.]+)\.supabase/);
+        if (match) {
+          projectRef = match[1];
+        }
+      }
+
+      let supabaseAuthKey = null;
       const keys = Object.keys(localStorage);
-      const supabaseAuthKey = keys.find(
-        (key) => key.includes("-auth-token") && key.startsWith("sb-")
-      );
+      
+      if (projectRef) {
+        supabaseAuthKey = keys.find(
+          (key) => key === `sb-${projectRef}-auth-token`
+        );
+      }
+      
+      if (!supabaseAuthKey) {
+        supabaseAuthKey = keys.find(
+          (key) => key.includes("-auth-token") && key.startsWith("sb-")
+        );
+      }
 
       if (supabaseAuthKey) {
         const tokenData = localStorage.getItem(supabaseAuthKey);
@@ -302,7 +320,7 @@ class ApiClient {
             parsed.access_token || parsed.currentSession?.access_token;
 
           if (token) {
-            console.log("✅ Found Supabase auth token");
+            console.log("✅ Found Supabase auth token for key:", supabaseAuthKey);
             return token;
           }
         }
