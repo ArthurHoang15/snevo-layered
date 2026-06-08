@@ -8,7 +8,7 @@
 // ── Infrastructure ──
 import createSupabaseConfig from './infrastructure/database/supabase.js';
 
-// ── Data / Repositories ─
+// ── Data / Repositories ─-
 import ShoeRepository from './data/repositories/ShoeRepository.js';
 import CategoryRepository from './data/repositories/CategoryRepository.js';
 import OrderRepository from './data/repositories/OrderRepository.js';
