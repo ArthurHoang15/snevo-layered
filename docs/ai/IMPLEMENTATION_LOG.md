@@ -381,3 +381,49 @@ Append one entry after each completed implementation task that changes code or d
 **Remaining notes:**
 - Reference `schema.sql` still lacks `carts` and `shoes.is_featured`; Phase 5 must resolve or document these before claiming full app equivalence.
 - Phase 3 services must recreate user-facing stock, cart, import reversal, and featured response behavior by composing repository primitives.
+
+## 2026-06-08 - Phase 3 Service Layer
+
+**Actor:** Nhan / AI-assisted
+
+**Prompt summary:** Implement the Phase 3 business service layer for Snevo layered architecture, with `OrderService.createOrder()` as the critical workflow.
+
+**Implemented:**
+- Added constructor-injected services for products, categories, cart, orders, payments, profiles, addresses, reviews, variants, imports, and admin workflows.
+- Moved business validation into services for product/category payloads, cart quantities, checkout inputs, payment methods/statuses, account data, reviews, variants, stock changes, and imports.
+- Implemented `OrderService.createOrder()` to validate address/payment method, read cart items, calculate totals, create order and order items, decrement stock, create payment, auto-approve eligible orders, and clear the cart.
+- Added service-layer contract tests, including a fake-repository checkout workflow test for `OrderService.createOrder()`.
+- Removed the empty services `.gitkeep` after real service files were added.
+
+**Architecture impact:**
+- Established the Business Service layer under `backend/business/services`.
+- Kept services free of HTTP request/response handling and direct Supabase access.
+- Preserved dependency injection by receiving repositories through constructors rather than importing repository instances.
+- Left controllers in Phase 4 responsible only for parsing HTTP input and calling these services.
+
+**Files changed:**
+- `backend/business/services/ProductService.js`
+- `backend/business/services/CategoryService.js`
+- `backend/business/services/CartService.js`
+- `backend/business/services/OrderService.js`
+- `backend/business/services/PaymentService.js`
+- `backend/business/services/ProfileService.js`
+- `backend/business/services/AddressService.js`
+- `backend/business/services/ReviewService.js`
+- `backend/business/services/VariantService.js`
+- `backend/business/services/ImportService.js`
+- `backend/business/services/AdminService.js`
+- `backend/business/services/.gitkeep`
+- `test/service-phase3-contract.test.js`
+- `docs/ai/PHASE_STATUS.md`
+- `docs/ai/IMPLEMENTATION_LOG.md`
+
+**Verification:**
+- Ran `npm install --package-lock=false` because local `node_modules` was missing.
+- Ran `npm test`; all 9 tests passed.
+- Ran service-layer scans for direct Supabase usage and presentation/HTTP imports; no matches.
+- Ran a stricter HTTP token scan for standalone `req`/`res`, `writeHead`, and `.end(`; no matches.
+
+**Remaining notes:**
+- The prompt's literal `rg "req|res|writeHead|end\\(" backend/business/services` pattern is too broad and matches substrings such as `required`, `address`, and `restore`; use a token-aware scan such as `rg "\\b(req|res)\\b|writeHead|end\\(" backend/business/services`.
+- Reference pricing behavior was not available locally because `SNEVO_REFERENCE_PATH` was not set and no `Snevo-reference` folder was found; Phase 3 uses injectable pricing policy defaults of zero tax and zero shipping until the reference rule is confirmed.

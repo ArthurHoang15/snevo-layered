@@ -1,0 +1,131 @@
+import { BusinessLogicError, NotFoundError, ValidationError } from '../../infrastructure/errors/ErrorClasses.js';
+import { ORDER_STATUS, PAYMENT_STATUS } from '../../infrastructure/utils/constants.js';
+import { validateOrderTransition } from '../../infrastructure/utils/orderUtils.js';
+
+function requireDependency(value, name) {
+  if (!value) throw new BusinessLogicError(`${name} repository is required`);
+}
+
+function toPositiveInteger(value, field) {
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    throw new ValidationError('Validation failed', [{ field, message: `${field} must be a positive integer` }]);
+  }
+  return parsed;
+}
+
+export default class AdminService {
+  constructor({
+    productRepository,
+    categoryRepository,
+    orderRepository,
+    orderItemRepository,
+    paymentRepository,
+    variantRepository
+  } = {}) {
+    this.productRepository = productRepository;
+    this.categoryRepository = categoryRepository;
+    this.orderRepository = orderRepository;
+    this.orderItemRepository = orderItemRepository;
+    this.paymentRepository = paymentRepository;
+    this.variantRepository = variantRepository;
+  }
+
+  async getDashboardSummary() {
+    requireDependency(this.productRepository, 'Product');
+    requireDependency(this.categoryRepository, 'Category');
+    requireDependency(this.orderRepository, 'Order');
+    requireDependency(this.paymentRepository, 'Payment');
+    requireDependency(this.variantRepository, 'Variant');
+
+    const [
+      productCount,
+      categoryCount,
+      orderCount,
+      pendingOrderCount,
+      approvedOrderCount,
+      cancelledOrderCount,
+      lowStockCount,
+      totalRevenue,
+      recentOrders
+    ] = await Promise.all([
+      this.productRepository.countAll ? this.productRepository.countAll() : this.productRepository.count(),
+      this.categoryRepository.countAll ? this.categoryRepository.countAll() : this.categoryRepository.count(),
+      this.orderRepository.countAll(),
+      this.orderRepository.countPending(),
+      this.orderRepository.countApproved(),
+      this.orderRepository.countCancelled(),
+      this.variantRepository.getLowStockCount(),
+      this.paymentRepository.sumCompletedRevenue(),
+      this.orderRepository.getRecent(5)
+    ]);
+
+    return {
+      products: productCount,
+      categories: categoryCount,
+      orders: {
+        total: orderCount,
+        pending: pendingOrderCount,
+        approved: approvedOrderCount,
+        cancelled: cancelledOrderCount
+      },
+      inventory: {
+        low_stock: lowStockCount
+      },
+      payments: {
+        completed_revenue: totalRevenue
+      },
+      recent_orders: recentOrders
+    };
+  }
+
+  async listOrders({ status = null, page = 1, limit = 10, search = '' } = {}) {
+    requireDependency(this.orderRepository, 'Order');
+    return this.orderRepository.getAllOrders(status, page, limit, search);
+  }
+
+  async getOrderDetail(orderId) {
+    requireDependency(this.orderRepository, 'Order');
+    const id = toPositiveInteger(orderId, 'order_id');
+    const order = await this.orderRepository.findWithItems(id);
+    if (!order) throw new NotFoundError('Order');
+    return order;
+  }
+
+  async updateOrderStatus(orderId, status) {
+    requireDependency(this.orderRepository, 'Order');
+    requireDependency(this.paymentRepository, 'Payment');
+    const id = toPositiveInteger(orderId, 'order_id');
+    this._validateStatus(status);
+    const order = await this.orderRepository.getWithPayment(id);
+    if (!order) throw new NotFoundError('Order');
+    const transition = validateOrderTransition(order, status, order.payment);
+    if (!transition.valid) throw new BusinessLogicError(transition.reason);
+    return this.orderRepository.setStatus(id, status);
+  }
+
+  async getTopSellingProducts(limit = 5) {
+    requireDependency(this.orderItemRepository, 'OrderItem');
+    return this.orderItemRepository.getTopSellingProducts(toPositiveInteger(limit, 'limit'));
+  }
+
+  async getLowStockVariants(threshold = 10) {
+    requireDependency(this.variantRepository, 'Variant');
+    const normalizedThreshold = toPositiveInteger(threshold, 'threshold');
+    return this.variantRepository.findLowStock(normalizedThreshold);
+  }
+
+  async listPaymentsByStatus(status = PAYMENT_STATUS.PENDING) {
+    requireDependency(this.paymentRepository, 'Payment');
+    if (!Object.values(PAYMENT_STATUS).includes(status)) {
+      throw new ValidationError('Validation failed', [{ field: 'status', message: 'status is not supported' }]);
+    }
+    return this.paymentRepository.findByStatus(status);
+  }
+
+  _validateStatus(status) {
+    if (!Object.values(ORDER_STATUS).includes(status)) {
+      throw new ValidationError('Validation failed', [{ field: 'status', message: 'status is not supported' }]);
+    }
+  }
+}
