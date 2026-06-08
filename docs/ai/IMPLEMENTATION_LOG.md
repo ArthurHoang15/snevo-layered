@@ -35,6 +35,29 @@ Append one entry after each completed implementation task that changes code or d
 **Remaining notes:**
 - Infrastructure implementation was left for Phase 1.
 
+## 2026-06-07 - Gitignore Cleanup
+
+**Actor:** Quan / AI-assisted
+
+**Prompt summary:** Update ignore rules so local planning notes do not accidentally enter commit history.
+
+**Implemented:**
+- Changed `.gitignore` so `REFACTOR_TEAM_PLAN.md` is ignored.
+- Kept `AGENTS.md` ignored at this point because the AI workflow docs had not been committed yet.
+
+**Architecture impact:**
+- No backend architecture or application behavior changed.
+- Reduced risk of committing local planning files before the shared docs structure existed.
+
+**Files changed:**
+- `.gitignore`
+
+**Verification:**
+- Reviewed commit `2bb1344 chore: update gitignore`.
+
+**Remaining notes:**
+- Later AI workflow documentation removed `AGENTS.md` from `.gitignore` so shared agent rules could be committed.
+
 ## 2026-06-07 - Phase 1 Infrastructure
 
 **Actor:** Quan / AI-assisted
@@ -132,3 +155,229 @@ Append one entry after each completed implementation task that changes code or d
 
 **Remaining notes:**
 - Each team member still needs to set local environment variables to their own reference repo and architecture plan locations.
+
+## 2026-06-07 - Phase 2 Repository Layer
+
+**Actor:** Quan / AI-assisted
+
+**Prompt summary:** Port old model data-access behavior into layered repository classes while removing validation concerns from repositories.
+
+**Implemented:**
+- Added `BaseRepository` with database-only CRUD/query helpers.
+- Added product catalog repositories for shoes and categories.
+- Added variant metadata repositories for colors, sizes, and shoe variants.
+- Added cart, order, order item, payment, profile, address, review, and import repositories.
+- Removed old repository `.gitkeep` marker after real repository files were created.
+
+**Architecture impact:**
+- Created the Data Repository layer under `backend/data/repositories`.
+- Moved model data-access behavior toward repositories that use Infrastructure Supabase access.
+- Kept validation/business rules out of repositories for Phase 3 services.
+
+**Files changed:**
+- `backend/data/repositories/BaseRepository.js`
+- `backend/data/repositories/ShoeRepository.js`
+- `backend/data/repositories/CategoryRepository.js`
+- `backend/data/repositories/ColorRepository.js`
+- `backend/data/repositories/SizeRepository.js`
+- `backend/data/repositories/ShoeVariantRepository.js`
+- `backend/data/repositories/CartRepository.js`
+- `backend/data/repositories/OrderRepository.js`
+- `backend/data/repositories/OrderItemRepository.js`
+- `backend/data/repositories/PaymentRepository.js`
+- `backend/data/repositories/ProfileRepository.js`
+- `backend/data/repositories/AddressRepository.js`
+- `backend/data/repositories/ReviewRepository.js`
+- `backend/data/repositories/ImportRepository.js`
+
+**Verification:**
+- Planned static import checks for all repository modules.
+- Planned layer-rule checks for forbidden `validationRules`, `BaseModel`, presentation, and business imports.
+- Planned import whitelist check for repository imports.
+- Planned `npm test` smoke check.
+
+**Remaining notes:**
+- Service layer still needs to be created in Phase 3.
+
+## 2026-06-07 - Implementation Log Backfill Audit
+
+**Actor:** AI-assisted
+
+**Prompt summary:** Check old commits and update documentation for any completed implementation work not yet captured by `docs/ai/IMPLEMENTATION_LOG.md`.
+
+**Implemented:**
+- Compared chronological Git history against existing implementation log entries.
+- Backfilled the missing `chore: update gitignore` commit as a standalone log entry.
+- Confirmed merge commit `33724f0` does not need a separate implementation entry because it only merged already logged infrastructure/docs commits.
+
+**Architecture impact:**
+- No backend architecture or application behavior changed.
+- Improved traceability between commit history and report-ready implementation notes.
+
+**Files changed:**
+- `docs/ai/IMPLEMENTATION_LOG.md`
+
+**Verification:**
+- Reviewed `git log --reverse --name-status`.
+- Reviewed `git show 2bb1344 -- .gitignore`.
+- Reviewed `git show 33724f0`.
+
+**Remaining notes:**
+- `AGENTS.md` currently has an unrelated unstaged local change that was not part of this backfill.
+
+## 2026-06-08 - Phase 2 Repository Hardening
+
+**Actor:** Quan / AI-assisted
+
+**Prompt summary:** Harden repository behavior before Phase 3 so repository return shapes and data-access helpers better match `Snevo-reference`.
+
+**Implemented:**
+- Aligned product listing, detail, reviews, rating summary, soft delete, and restore metadata behavior in `ShoeRepository`.
+- Hardened stock update operations with `increment`, `decrement`, `add`, `subtract`, and `set` aliases while clamping subtract/decrement to zero.
+- Added duplicate-safe variant bulk creation and variant generation with `created/skipped` response metadata.
+- Restored admin order list, order detail, payment parsing, address attach, and cart summary return shapes closer to the reference project.
+- Added query-first helper methods for category name uniqueness and review purchase lookup while keeping old boolean wrappers for compatibility.
+
+**Architecture impact:**
+- Kept repository methods focused on database reads/writes and compatibility query helpers.
+- Reduced Phase 3 service risk by making product, order, cart, stock, and variant query behavior closer to the reference data-access layer.
+- Clarified that services still own validation, eligibility decisions, checkout orchestration, and final business rules.
+
+**Files changed:**
+- `backend/data/repositories/ShoeRepository.js`
+- `backend/data/repositories/ShoeVariantRepository.js`
+- `backend/data/repositories/OrderRepository.js`
+- `backend/data/repositories/CartRepository.js`
+- `backend/data/repositories/CategoryRepository.js`
+- `backend/data/repositories/ReviewRepository.js`
+- `docs/ai/IMPLEMENTATION_LOG.md`
+- `docs/ai/REPORT_NOTES.md`
+- `docs/ai/PHASE_STATUS.md`
+
+**Verification:**
+- Ran repository import smoke checks.
+- Instantiated `ShoeRepository` without Supabase credentials.
+- Ran static behavior checks for pagination, stock info, rating distribution, stock clamping, variant skipped metadata, parsed payments, and cart totals.
+- Ran repository layer-rule and import whitelist checks.
+- Ran `npm test`.
+- Ran `npm start` and confirmed it still fails because `backend/server.js` is intentionally not implemented until Phase 5.
+
+**Remaining notes:**
+- Full app behavior equivalence remains impossible until Phase 3-5 add services, presentation/routes, server bootstrap, frontend/static files, schema, and scripts.
+
+## 2026-06-08 - Phase 2 Repository Final Schema Cleanup
+
+**Actor:** Quan / AI-assisted
+
+**Prompt summary:** Finish Phase 2 repository hardening by removing schema mismatches and business decision wrappers before Phase 3 service work.
+
+**Implemented:**
+- Added repository contract smoke tests that run without Supabase credentials.
+- Aligned order item writes and order total calculations to `price_per_unit`.
+- Aligned payment writes to the reference `payments` schema and kept payment details encoded in `transaction_id`.
+- Aligned import queries, writes, statistics, date filtering, and stock reversal to `quantity_imported`, `import_price`, `supplier_id`, and `import_date`.
+- Removed repository business decision wrappers for category uniqueness, purchase verification, cart summary totals, and shoe restore preview decisions.
+
+**Architecture impact:**
+- Kept repository code focused on database reads/writes and raw query helpers.
+- Moved validation, eligibility checks, pricing totals, restore decisions, and order/payment workflow choices to the future service layer.
+- Preserved dependency direction by avoiding imports from `business/` or `presentation/`.
+
+**Files changed:**
+- `backend/data/repositories/OrderItemRepository.js`
+- `backend/data/repositories/OrderRepository.js`
+- `backend/data/repositories/PaymentRepository.js`
+- `backend/data/repositories/ImportRepository.js`
+- `backend/data/repositories/CategoryRepository.js`
+- `backend/data/repositories/ReviewRepository.js`
+- `backend/data/repositories/CartRepository.js`
+- `backend/data/repositories/ShoeRepository.js`
+- `test/repository-phase2-contract.test.js`
+- `docs/ai/PHASE_STATUS.md`
+- `docs/ai/IMPLEMENTATION_LOG.md`
+
+**Verification:**
+- Ran repository contract tests with `npm test`.
+- Ran repository layer-rule scans for forbidden validation/business imports and schema-mismatched field names.
+- Ran repository dynamic import smoke check.
+
+**Remaining notes:**
+- Full app behavior equivalence still waits for Phase 3-5 services, presentation/routes, server bootstrap, frontend/static files, and schema copy.
+
+## 2026-06-08 - Phase 2 Strict Repository Cleanup
+
+**Actor:** Quan / AI-assisted
+
+**Prompt summary:** Remove remaining Phase 2 repository schema risks and business workflow helpers so services can own user-facing behavior in Phase 3.
+
+**Implemented:**
+- Expanded repository contract tests to catch schema-unsafe fields, business wrapper names, and repository workflow helpers.
+- Made base soft delete and restore update only `is_active` so repositories do not write unsupported `deleted_at` columns.
+- Removed payment detail parsing/generation, payment completion, and refund workflow helpers from `PaymentRepository`.
+- Removed order payment detail enrichment and order total calculation from `OrderRepository`.
+- Replaced category uniqueness-named helper with a neutral `findByName` query helper.
+- Moved cart add-or-update workflow, address default orchestration, and variant generation workflows out of repositories.
+- Aligned cart ordering to `added_at`, review ordering to `review_date`, removed `is_featured` filtering, and replaced import stock reversal RPC use with direct stock update.
+
+**Architecture impact:**
+- Repository layer now exposes database query/write primitives instead of business workflow decisions.
+- Phase 3 services must recreate cart quantity rules, payment lifecycle behavior, default address behavior, variant SKU generation, response shaping, and order totals.
+- Preserved dependency direction and kept Phase 2 limited to data repositories.
+
+**Files changed:**
+- `backend/data/repositories/BaseRepository.js`
+- `backend/data/repositories/PaymentRepository.js`
+- `backend/data/repositories/OrderRepository.js`
+- `backend/data/repositories/CategoryRepository.js`
+- `backend/data/repositories/ReviewRepository.js`
+- `backend/data/repositories/CartRepository.js`
+- `backend/data/repositories/AddressRepository.js`
+- `backend/data/repositories/ShoeVariantRepository.js`
+- `backend/data/repositories/ShoeRepository.js`
+- `backend/data/repositories/ImportRepository.js`
+- `test/repository-phase2-contract.test.js`
+- `docs/ai/PHASE_STATUS.md`
+- `docs/ai/IMPLEMENTATION_LOG.md`
+
+**Verification:**
+- Ran `npm test`.
+- Ran repository layer-rule and schema-safety scans.
+- Ran repository dynamic import smoke check.
+
+**Remaining notes:**
+- Reference `schema.sql` still does not define the `carts` table used by both reference and layered cart code; Phase 5 schema verification must resolve or document that mismatch.
+- Full app behavior equivalence still waits for Phase 3-5 services, presentation/routes, server bootstrap, frontend/static files, and schema copy.
+
+## 2026-06-08 - Phase 2 Remaining Repository Cleanup
+
+**Actor:** Quan / AI-assisted
+
+**Prompt summary:** Fix the remaining Phase 2 repository issues found in audit: review ordering schema mismatch, import/stock workflow leakage, and unresolved cart/featured schema inconsistencies.
+
+**Implemented:**
+- Updated repository contract tests to catch `ShoeRepository.getReviews()` ordering by unsupported review fields and to block stock/import workflow helper names in repositories.
+- Changed `ShoeRepository.getReviews()` to order by `review_date`.
+- Removed `ImportRepository.deleteWithStockReverse()` so import deletion and stock reversal can be composed by Phase 3 services.
+- Removed `ShoeRepository.updateStock()` and replaced `ShoeVariantRepository.updateStock()`/`checkStock()` with raw `findStockById()` and `setStockQuantity()` primitives.
+- Kept `CartRepository` and `ShoeRepository.getFeatured()` as Phase 2 query helpers without adding unsupported schema columns or migrations.
+
+**Architecture impact:**
+- Stock availability, stock add/subtract, import stock reversal, cart behavior, and featured product semantics are now explicitly service/schema follow-ups instead of repository decisions.
+- Repository layer remains limited to schema-compatible reads/writes and query helpers.
+
+**Files changed:**
+- `backend/data/repositories/ImportRepository.js`
+- `backend/data/repositories/ShoeRepository.js`
+- `backend/data/repositories/ShoeVariantRepository.js`
+- `test/repository-phase2-contract.test.js`
+- `docs/ai/PHASE_STATUS.md`
+- `docs/ai/IMPLEMENTATION_LOG.md`
+
+**Verification:**
+- Ran `npm test`.
+- Ran repository layer-rule and remaining workflow/static scans.
+- Ran repository dynamic import smoke check.
+
+**Remaining notes:**
+- Reference `schema.sql` still lacks `carts` and `shoes.is_featured`; Phase 5 must resolve or document these before claiming full app equivalence.
+- Phase 3 services must recreate user-facing stock, cart, import reversal, and featured response behavior by composing repository primitives.

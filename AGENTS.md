@@ -55,9 +55,13 @@ Do not import upward across layers. Infrastructure must not import business or p
 
 ## Documentation Rules
 
-After every completed implementation task that changes code or docs:
+During plan execution, after each completed plan part or phase that changes code or project docs, update the relevant documentation immediately instead of waiting for a prompt reminder.
+
+For each completed implementation task that changes code or project docs:
 
 1. Append an entry to `docs/ai/IMPLEMENTATION_LOG.md`.
 2. Update `docs/ai/PHASE_STATUS.md` if a phase or task status changed.
+
+Prompt-only or agent-instruction-only changes do not require updates to `docs/ai/IMPLEMENTATION_LOG.md` or `docs/ai/PHASE_STATUS.md` unless the task explicitly asks for those docs to be updated.
 
 Before final response, explicitly state whether the implementation log and phase status were updated.
