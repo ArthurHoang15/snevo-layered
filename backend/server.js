@@ -16,7 +16,7 @@ dotenv.config({
 // Import Dependency Injection Container
 import buildContainer from './container.js';
 
-// Import modular routes
+// Import modular routes.
 import productRoutes from './presentation/routes/products.js';
 import variantRoutes from './presentation/routes/variants.js';
 import categoryRoutes from './presentation/routes/categories.js';
