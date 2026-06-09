@@ -57,6 +57,7 @@ export default class AdminService {
     requireDependency(this.orderRepository, 'Order');
     requireDependency(this.paymentRepository, 'Payment');
     requireDependency(this.variantRepository, 'Variant');
+    requireDependency(this.orderItemRepository, 'OrderItem');
 
     const [
       productCount,
@@ -67,7 +68,9 @@ export default class AdminService {
       cancelledOrderCount,
       lowStockCount,
       totalRevenue,
-      recentOrders
+      recentOrders,
+      variantCount,
+      topProducts
     ] = await Promise.all([
       this.productRepository.countAll ? this.productRepository.countAll() : this.productRepository.count(),
       this.categoryRepository.countAll ? this.categoryRepository.countAll() : this.categoryRepository.count(),
@@ -77,7 +80,9 @@ export default class AdminService {
       this.orderRepository.countCancelled(),
       this.variantRepository.getLowStockCount(),
       this.paymentRepository.sumCompletedRevenue(),
-      this.orderRepository.getRecent(5)
+      this.orderRepository.getRecent(5),
+      this.variantRepository.count(),
+      this.orderItemRepository.getTopSellingProducts(5)
     ]);
 
     return {
@@ -95,7 +100,20 @@ export default class AdminService {
       payments: {
         completed_revenue: totalRevenue
       },
-      recent_orders: recentOrders
+      recent_orders: recentOrders,
+      totalMetrics: {
+        totalShoes: productCount,
+        totalVariants: variantCount,
+        totalOrders: orderCount,
+        totalRevenue: totalRevenue,
+        lowStockItems: lowStockCount,
+        pendingOrders: pendingOrderCount,
+        approvedOrders: approvedOrderCount,
+        cancelledOrders: cancelledOrderCount
+      },
+      topSelling: {
+        products: topProducts
+      }
     };
   }
 

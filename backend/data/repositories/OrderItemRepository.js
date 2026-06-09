@@ -48,7 +48,7 @@ export default class OrderItemRepository extends BaseRepository {
     try {
       const { data, error } = await this.db
         .from(this.tableName)
-        .select('quantity, shoe_variants(shoes(shoe_id, shoe_name, image_url))');
+        .select('quantity, price_per_unit, shoe_variants(shoes(shoe_id, shoe_name, image_url, base_price))');
       if (error) throw new DatabaseError('Failed to get top selling products', error);
       return this._aggregateTopProducts(data || [], limit);
     } catch (error) {
@@ -68,7 +68,7 @@ export default class OrderItemRepository extends BaseRepository {
       if (orderIds.length === 0) return [];
       const { data, error } = await this.db
         .from(this.tableName)
-        .select('quantity, shoe_variants(shoes(shoe_id, shoe_name, image_url))')
+        .select('quantity, price_per_unit, shoe_variants(shoes(shoe_id, shoe_name, image_url, base_price))')
         .in('order_id', orderIds);
       if (error) throw new DatabaseError('Failed to get top selling products since date', error);
       return this._aggregateTopProducts(data || [], limit);
@@ -80,15 +80,35 @@ export default class OrderItemRepository extends BaseRepository {
 
   _aggregateTopProducts(items, limit) {
     const productMap = new Map();
+    let totalAllRevenue = 0;
     for (const item of items) {
       const product = item.shoe_variants?.shoes;
       if (!product) continue;
-      const existing = productMap.get(product.shoe_id) || { ...product, total_sold: 0 };
-      existing.total_sold += Number(item.quantity || 0);
+      
+      const quantity = Number(item.quantity || 0);
+      const price = Number(item.price_per_unit || product.base_price || 0);
+      const itemRevenue = quantity * price;
+      totalAllRevenue += itemRevenue;
+
+      const existing = productMap.get(product.shoe_id) || {
+        shoe_id: product.shoe_id,
+        shoe_name: product.shoe_name,
+        image_url: product.image_url,
+        units_sold: 0,
+        revenue: 0
+      };
+      existing.units_sold += quantity;
+      existing.revenue += itemRevenue;
       productMap.set(product.shoe_id, existing);
     }
-    return Array.from(productMap.values())
-      .sort((a, b) => b.total_sold - a.total_sold)
+
+    const result = Array.from(productMap.values())
+      .sort((a, b) => b.units_sold - a.units_sold)
       .slice(0, limit);
+
+    return result.map(p => ({
+      ...p,
+      percentage_of_revenue: totalAllRevenue > 0 ? Math.round((p.revenue / totalAllRevenue) * 100) : 0
+    }));
   }
 }

@@ -21,6 +21,9 @@ export default async function adminRoutes(req, res, controller, pathname, sendEr
         // GET /api/admin/dashboard/metrics
         if (adminPath === '/dashboard/metrics' && req.method === 'GET') return controller.getDashboardMetrics(req, res);
 
+        // GET /api/admin/metrics
+        if (adminPath === '/metrics' && req.method === 'GET') return controller.getDashboardMetrics(req, res);
+
         // GET /api/admin/statistics
         if (adminPath === '/statistics' && req.method === 'GET') return controller.getStatistics(req, res);
 
