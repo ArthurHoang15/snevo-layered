@@ -49,14 +49,38 @@ export default class ReviewRepository extends BaseRepository {
     try {
       const { page = 1, limit = 20, orderBy = 'review_date', orderDirection = 'desc' } = options;
       const offset = (page - 1) * limit;
+      
       const { data, error, count } = await this.db
         .from(this.tableName)
-        .select('*, profiles(full_name, avatar_url)', { count: 'exact' })
+        .select('*', { count: 'exact' })
         .eq('shoe_id', shoeId)
         .order(orderBy, { ascending: orderDirection === 'asc' })
         .range(offset, offset + limit - 1);
       if (error) throw new DatabaseError('Failed to find reviews by shoe', error);
-      return { data: data || [], total: count || 0, page, limit, totalPages: Math.ceil((count || 0) / limit) };
+
+      let rows = data || [];
+      const userIds = [...new Set(rows.map((item) => item.user_id).filter(Boolean))];
+      
+      if (userIds.length > 0) {
+        const { data: profiles, error: profileError } = await this.db
+          .from('profiles')
+          .select('user_id, username, full_name, avatar_url')
+          .in('user_id', userIds);
+        if (profileError) throw new DatabaseError('Failed to fetch review profiles', profileError);
+        
+        const profileMap = new Map((profiles || []).map((profile) => [profile.user_id, profile]));
+        rows = rows.map((item) => {
+          const profile = profileMap.get(item.user_id);
+          return {
+            ...item,
+            username: profile?.full_name || profile?.username || 'User',
+            avatar_url: profile?.avatar_url || null,
+            profiles: profile || null
+          };
+        });
+      }
+
+      return { data: rows, total: count || 0, page, limit, totalPages: Math.ceil((count || 0) / limit) };
     } catch (error) {
       if (error instanceof DatabaseError) throw error;
       throw new DatabaseError(`Find reviews by shoe failed: ${error.message}`, error);

@@ -868,7 +868,7 @@ ProductDetailManager.prototype.preloadOrdersCache = async function () {
 
     // Fetch and cache all orders once
     const response = await window.ordersAPI.getOrders({ limit: 1000 });
-    this.ordersCache = response.data?.orders || response.orders || [];
+    this.ordersCache = response.data?.data || response.data?.orders || response.orders || [];
     console.log(
       "✅ Preloaded orders cache:",
       this.ordersCache.length,
@@ -949,7 +949,7 @@ ProductDetailManager.prototype.validateUserPurchase = async function () {
       }
 
       const response = await window.ordersAPI.getOrders({ limit: 1000 });
-      orders = response.data?.orders || response.orders || [];
+      orders = response.data?.data || response.data?.orders || response.orders || [];
       this.ordersCache = orders; // Update cache
     }
 

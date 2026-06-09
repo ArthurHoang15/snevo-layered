@@ -226,12 +226,26 @@ export default class OrderService {
     return this.orderRepository.setStatus(id, targetStatus);
   }
 
-  async cancelOrder(orderId, userId = null) {
+  async cancelOrder(orderId, userId = null, reason = null) {
     const order = await this.getOrderById(orderId, userId);
     if (order.status !== ORDER_STATUS.PENDING) {
       throw new BusinessLogicError('Only pending orders can be cancelled');
     }
-    return this.orderRepository.setStatus(order.order_id, ORDER_STATUS.CANCELLED);
+    
+    let nextNotes = order.notes || '';
+    if (reason) {
+      const reasonPrefix = 'Lý do hủy: ';
+      if (nextNotes) {
+        nextNotes += ` | ${reasonPrefix}${reason}`;
+      } else {
+        nextNotes = `${reasonPrefix}${reason}`;
+      }
+    }
+
+    return this.orderRepository.updateById(order.order_id, {
+      status: ORDER_STATUS.CANCELLED,
+      notes: nextNotes || null
+    });
   }
 
   async getAllOrders({ status = null, page = 1, limit = 10, search = '' } = {}) {

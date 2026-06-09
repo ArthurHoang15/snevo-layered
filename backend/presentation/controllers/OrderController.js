@@ -62,7 +62,8 @@ export default class OrderController extends BaseController {
     async cancelOrder(req, res) {
         return this.handleRequest(req, res, async () => {
             const user = this.requireAuth(req);
-            const order = await this.orderService.cancelOrder(req.params.id, user.id);
+            const { reason } = req.body || {};
+            const order = await this.orderService.cancelOrder(req.params.id, user.id, reason);
             this.sendResponse(res, order, 'Order cancelled successfully');
         });
     }
