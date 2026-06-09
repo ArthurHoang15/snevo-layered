@@ -46,6 +46,18 @@ export default async function paymentRoutes(req, res, controller, pathname, send
             return controller.confirmPayment(req, res);
         }
 
+        // POST /api/payments/:id/approve
+        if (paymentPath.match(/^\/\d+\/approve$/) && req.method === 'POST') {
+            req.params = { id: paymentPath.replace('/approve', '').replace('/', '') };
+            return controller.approveCod(req, res);
+        }
+
+        // POST /api/payments/:id/collect
+        if (paymentPath.match(/^\/\d+\/collect$/) && req.method === 'POST') {
+            req.params = { id: paymentPath.replace('/collect', '').replace('/', '') };
+            return controller.collectCod(req, res);
+        }
+
         // POST /api/payments/:id/refund
         if (paymentPath.match(/^\/\d+\/refund$/) && req.method === 'POST') {
             req.params = { id: paymentPath.replace('/refund', '').replace('/', '') };

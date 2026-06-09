@@ -47,7 +47,15 @@ export default class OrderRepository extends BaseRepository {
           notes,
           created_at,
           updated_at,
-          order_items(order_item_id)
+          order_items(order_item_id),
+          payments(
+            payment_id,
+            payment_method,
+            payment_amount,
+            status,
+            transaction_id,
+            payment_date
+          )
         `, { count: 'exact' })
         .order('created_at', { ascending: false });
       if (status) query = query.eq('status', status);
@@ -56,7 +64,14 @@ export default class OrderRepository extends BaseRepository {
       const { data, error, count } = await query;
       if (error) throw new DatabaseError('Failed to find all orders', error);
 
-      let ordersWithProfiles = data || [];
+      let ordersWithProfiles = (data || []).map((order) => {
+        const payments = order.payments || [];
+        return {
+          ...order,
+          payment: payments[0] || null
+        };
+      });
+
       const userIds = [...new Set(ordersWithProfiles.map((order) => order.user_id).filter(Boolean))];
       if (userIds.length > 0) {
         const { data: profiles, error: profileError } = await this.db

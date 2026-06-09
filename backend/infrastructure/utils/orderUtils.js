@@ -40,8 +40,10 @@ export const generateMockPaymentDetails = (method, inputData = {}) => {
     case PAYMENT_METHODS.CASH:
       details = {
         t: 'cash',
-        s: 'pending'
+        s: inputData.s || 'pending'
       };
+      if (inputData.c) details.c = inputData.c;
+      if (inputData.ca) details.ca = inputData.ca;
       break;
 
     default:
@@ -125,17 +127,6 @@ export const validateOrderTransition = (order, newStatus, payment = null) => {
       return {
         valid: false,
         reason: 'Can only approve pending orders'
-      };
-    }
-
-    if (
-      payment &&
-      payment.payment_method !== PAYMENT_METHODS.CASH &&
-      payment.status !== PAYMENT_STATUS.COMPLETED
-    ) {
-      return {
-        valid: false,
-        reason: 'Payment must be completed before approval'
       };
     }
   }

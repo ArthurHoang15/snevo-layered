@@ -44,7 +44,8 @@ class AdminOrderManagement {
         limit: 1 // Only need count, not actual data
       });
       
-      const pendingCount = response?.pagination?.total || 0;
+      const payload = response?.data || response || {};
+      const pendingCount = payload.total || 0;
       
       const badgeElement = document.getElementById('pendingOrdersCount');
       if (badgeElement) {
@@ -98,9 +99,29 @@ class AdminOrderManagement {
       
       console.log('📦 Raw API response:', ordersResponse);
       
-      // Extract pagination metadata
-      const pagination = ordersResponse?.pagination || {};
-      const ordersList = Array.isArray(ordersResponse?.data) ? ordersResponse.data : [];
+      // The backend wraps response in { success, data: { data: [...], total, page, ... } }
+      // Or if it just returned the pagination object directly.
+      const payload = ordersResponse?.data || ordersResponse || {};
+      const totalPages = payload.totalPages || payload.pages || 1;
+      const currentPage = payload.page || 1;
+      const pagination = {
+        total: payload.total || 0,
+        page: currentPage,
+        limit: payload.limit || 10,
+        totalPages: totalPages,
+        hasPrev: currentPage > 1,
+        hasNext: currentPage < totalPages
+      };
+      
+      // Extract array from payload.data or payload.orders or payload directly
+      let ordersList = [];
+      if (Array.isArray(payload.data)) {
+        ordersList = payload.data;
+      } else if (Array.isArray(payload.orders)) {
+        ordersList = payload.orders;
+      } else if (Array.isArray(payload)) {
+        ordersList = payload;
+      }
       
       console.log('📦 Extracted ordersList:', ordersList.length, 'items | Pagination:', pagination);
       
@@ -118,7 +139,8 @@ class AdminOrderManagement {
           pendingCount = pagination.total || 0;
         } else {
           // Use the separate pending query result
-          pendingCount = pendingResponse?.pagination?.total || 0;
+          const pendingPayload = pendingResponse?.data || pendingResponse || {};
+          pendingCount = pendingPayload.total || 0;
         }
         badgeElement.textContent = pendingCount;
         badgeElement.style.display = pendingCount > 0 ? 'inline-block' : 'none';

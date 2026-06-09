@@ -175,7 +175,17 @@ class AdminDashboard {
       console.log('📦 Orders data fetched:', response);
       
       // Extract orders array
-      this.ordersData = Array.isArray(response?.data) ? response.data : [];
+      const payload = response?.data || response || {};
+      let ordersList = [];
+      if (Array.isArray(payload.data)) {
+        ordersList = payload.data;
+      } else if (Array.isArray(payload.orders)) {
+        ordersList = payload.orders;
+      } else if (Array.isArray(payload)) {
+        ordersList = payload;
+      }
+      
+      this.ordersData = ordersList;
       
       if (!Array.isArray(this.ordersData)) {
         console.error('❌ Invalid orders data format:', typeof this.ordersData);

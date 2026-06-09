@@ -1,6 +1,26 @@
 import { BusinessLogicError, NotFoundError, ValidationError } from '../../infrastructure/errors/ErrorClasses.js';
 import { ORDER_STATUS, PAYMENT_STATUS } from '../../infrastructure/utils/constants.js';
-import { validateOrderTransition } from '../../infrastructure/utils/orderUtils.js';
+import { validateOrderTransition, parsePaymentDetails } from '../../infrastructure/utils/orderUtils.js';
+
+function enrichOrderPayment(order) {
+  if (!order) return order;
+  if (order.payment) {
+    const parsed = parsePaymentDetails(order.payment.transaction_id);
+    order.payment.payment_details = parsed;
+    order.payment.details = parsed;
+  }
+  if (Array.isArray(order.payments)) {
+    order.payments = order.payments.map(p => {
+      const parsed = parsePaymentDetails(p.transaction_id);
+      return {
+        ...p,
+        payment_details: parsed,
+        details: parsed
+      };
+    });
+  }
+  return order;
+}
 
 function requireDependency(value, name) {
   if (!value) throw new BusinessLogicError(`${name} repository is required`);
@@ -81,7 +101,14 @@ export default class AdminService {
 
   async listOrders({ status = null, page = 1, limit = 10, search = '' } = {}) {
     requireDependency(this.orderRepository, 'Order');
-    return this.orderRepository.getAllOrders(status, page, limit, search);
+    const result = await this.orderRepository.getAllOrders(status, page, limit, search);
+    if (result && Array.isArray(result.data)) {
+      result.data = result.data.map(enrichOrderPayment);
+    }
+    if (result && Array.isArray(result.orders)) {
+      result.orders = result.orders.map(enrichOrderPayment);
+    }
+    return result;
   }
 
   async getOrderDetail(orderId) {
@@ -89,7 +116,7 @@ export default class AdminService {
     const id = toPositiveInteger(orderId, 'order_id');
     const order = await this.orderRepository.findWithItems(id);
     if (!order) throw new NotFoundError('Order');
-    return order;
+    return enrichOrderPayment(order);
   }
 
   async updateOrderStatus(orderId, status) {
@@ -101,7 +128,13 @@ export default class AdminService {
     if (!order) throw new NotFoundError('Order');
     const transition = validateOrderTransition(order, status, order.payment);
     if (!transition.valid) throw new BusinessLogicError(transition.reason);
-    return this.orderRepository.setStatus(id, status);
+
+    let targetStatus = status;
+    if (status === ORDER_STATUS.SUCCESS && order.payment?.status === PAYMENT_STATUS.COMPLETED) {
+      targetStatus = ORDER_STATUS.DELIVERED;
+    }
+
+    return this.orderRepository.setStatus(id, targetStatus);
   }
 
   async getTopSellingProducts(limit = 5) {

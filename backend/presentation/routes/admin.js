@@ -45,6 +45,15 @@ export default async function adminRoutes(req, res, controller, pathname, sendEr
             return controller.updateAdminOrderStatus(req, res);
         }
 
+        // PUT /api/admin/orders/:id/cancel
+        if (segments[0] === 'orders' && segments.length === 3 && segments[2] === 'cancel' && req.method === 'PUT') {
+            req.params = { id: segments[1] };
+            // Simulate cancel by setting status to cancelled
+            req.body = req.body || {};
+            req.body.status = 'cancelled';
+            return controller.updateAdminOrderStatus(req, res);
+        }
+
         // GET /api/admin/top-selling
         if (adminPath === '/top-selling' && req.method === 'GET') return controller.getTopSellingProducts(req, res);
 

@@ -162,8 +162,6 @@ class Server {
                 }, pathname, this.sendError.bind(this));
             } else if (pathname.startsWith('/api/orders') && (pathname === '/api/orders' || pathname.startsWith('/api/orders/'))) {
                 await orderRoutes(req, res, this.controllers.order, pathname, this.sendError.bind(this));
-            } else if (pathname.startsWith('/api/admin/orders') && (pathname === '/api/admin/orders' || pathname.startsWith('/api/admin/orders/'))) {
-                await adminOrderRoutes(req, res, this.controllers.order, pathname, this.sendError.bind(this));
             } else if (pathname.startsWith('/api/users') && (pathname === '/api/users' || pathname.startsWith('/api/users/'))) {
                 await userRoutes(req, res, { 
                     profileController: this.controllers.profile, 

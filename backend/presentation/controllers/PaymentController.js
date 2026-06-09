@@ -65,6 +65,27 @@ export default class PaymentController extends BaseController {
         });
     }
 
+    // POST /api/payments/:id/approve (Admin/Seller)
+    async approveCod(req, res) {
+        return this.handleRequest(req, res, async () => {
+            this.requireRole(req, ['admin', 'seller']);
+            const payment = await this.paymentService.approveCod(req.params.id);
+            this.sendResponse(res, payment, 'COD payment approved successfully');
+        });
+    }
+
+    // POST /api/payments/:id/collect (Admin/Seller)
+    async collectCod(req, res) {
+        return this.handleRequest(req, res, async () => {
+            this.requireRole(req, ['admin', 'seller']);
+            const payment = await this.paymentService.collectCod(req.params.id, {
+                username: req.user.username || req.user.email || 'Admin',
+                userId: req.user.id
+            });
+            this.sendResponse(res, payment, 'COD payment collected successfully');
+        });
+    }
+
     // GET /api/payments/revenue
     async getRevenueSummary(req, res) {
         return this.handleRequest(req, res, async () => {

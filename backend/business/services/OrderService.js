@@ -2,10 +2,31 @@ import { BusinessLogicError, NotFoundError, ValidationError } from '../../infras
 import { ORDER_STATUS, PAYMENT_METHODS, PAYMENT_STATUS } from '../../infrastructure/utils/constants.js';
 import {
   generateMockPaymentDetails,
+  parsePaymentDetails,
   shouldAutoApproveOrder,
   shouldAutoCompletePayment,
   validateOrderTransition
 } from '../../infrastructure/utils/orderUtils.js';
+
+function enrichOrderPayment(order) {
+  if (!order) return order;
+  if (order.payment) {
+    const parsed = parsePaymentDetails(order.payment.transaction_id);
+    order.payment.payment_details = parsed;
+    order.payment.details = parsed;
+  }
+  if (Array.isArray(order.payments)) {
+    order.payments = order.payments.map(p => {
+      const parsed = parsePaymentDetails(p.transaction_id);
+      return {
+        ...p,
+        payment_details: parsed,
+        details: parsed
+      };
+    });
+  }
+  return order;
+}
 
 const DEFAULT_PRICING_POLICY = {
   taxRate: 0,
@@ -105,7 +126,7 @@ export default class OrderService {
     const order = await this.orderRepository.findWithItems(id);
     if (!order) throw new NotFoundError('Order');
     if (userId !== null && order.user_id !== userId) throw new NotFoundError('Order');
-    return order;
+    return enrichOrderPayment(order);
   }
 
   async createOrder(userId, orderData = {}) {
@@ -153,16 +174,19 @@ export default class OrderService {
     });
 
     let finalOrder = order;
-    if (shouldAutoApproveOrder(paymentMethod, payment.status)) {
-      finalOrder = await this.orderRepository.setStatus(order.order_id, ORDER_STATUS.SUCCESS);
-    }
 
     await this.cartRepository.clearUserCart(userId);
+
+    const enrichedPayment = {
+      ...payment,
+      payment_details: parsePaymentDetails(payment.transaction_id),
+      details: parsePaymentDetails(payment.transaction_id)
+    };
 
     return {
       order: finalOrder,
       order_items: orderItems,
-      payment,
+      payment: enrichedPayment,
       address,
       totals
     };
@@ -193,7 +217,13 @@ export default class OrderService {
     if (!order) throw new NotFoundError('Order');
     const transition = validateOrderTransition(order, newStatus, order.payment);
     if (!transition.valid) throw new BusinessLogicError(transition.reason);
-    return this.orderRepository.setStatus(id, newStatus);
+
+    let targetStatus = newStatus;
+    if (newStatus === ORDER_STATUS.SUCCESS && order.payment?.status === PAYMENT_STATUS.COMPLETED) {
+      targetStatus = ORDER_STATUS.DELIVERED;
+    }
+
+    return this.orderRepository.setStatus(id, targetStatus);
   }
 
   async cancelOrder(orderId, userId = null) {
@@ -206,7 +236,14 @@ export default class OrderService {
 
   async getAllOrders({ status = null, page = 1, limit = 10, search = '' } = {}) {
     requireDependency(this.orderRepository, 'Order');
-    return this.orderRepository.getAllOrders(status, page, limit, search);
+    const result = await this.orderRepository.getAllOrders(status, page, limit, search);
+    if (result && Array.isArray(result.data)) {
+      result.data = result.data.map(enrichOrderPayment);
+    }
+    if (result && Array.isArray(result.orders)) {
+      result.orders = result.orders.map(enrichOrderPayment);
+    }
+    return result;
   }
 
   _assertCheckoutDependencies() {

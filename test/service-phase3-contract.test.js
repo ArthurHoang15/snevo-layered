@@ -102,7 +102,7 @@ test('OrderService.createOrder validates cart, writes checkout records, updates 
     shipping_cost: 5,
     total_amount: 203
   });
-  assert.equal(checkout.order.status, 'processing');
+  assert.equal(checkout.order.status, 'pending');
   assert.equal(checkout.payment.status, 'completed');
   assert.equal(checkout.order_items[0].price_per_unit, 90);
   assert.deepEqual(calls.map((call) => call[0]), [
@@ -113,7 +113,6 @@ test('OrderService.createOrder validates cart, writes checkout records, updates 
     'insertItems',
     'setStock',
     'createPayment',
-    'setStatus',
     'clearCart'
   ]);
   assert.deepEqual(calls.find((call) => call[0] === 'setStock'), ['setStock', 10, 3]);

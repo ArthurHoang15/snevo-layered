@@ -1,9 +1,10 @@
 import { BusinessLogicError, NotFoundError, ValidationError } from '../../infrastructure/errors/ErrorClasses.js';
-import { PAYMENT_METHODS, PAYMENT_STATUS } from '../../infrastructure/utils/constants.js';
+import { PAYMENT_METHODS, PAYMENT_STATUS, ORDER_STATUS } from '../../infrastructure/utils/constants.js';
 import {
   generateMockPaymentDetails,
   parsePaymentDetails,
-  shouldAutoCompletePayment
+  shouldAutoCompletePayment,
+  validateOrderTransition
 } from '../../infrastructure/utils/orderUtils.js';
 
 function requireDependency(value, name) {
@@ -103,7 +104,12 @@ export default class PaymentService {
   }
 
   async completePayment(paymentId, transactionData = {}) {
-    return this.updatePaymentStatus(paymentId, PAYMENT_STATUS.COMPLETED, transactionData);
+    requireDependency(this.orderRepository, 'Order');
+    const payment = await this.updatePaymentStatus(paymentId, PAYMENT_STATUS.COMPLETED, transactionData);
+    if (payment && payment.order_id) {
+      await this.orderRepository.setStatus(payment.order_id, ORDER_STATUS.DELIVERED);
+    }
+    return payment;
   }
 
   async failPayment(paymentId, transactionData = {}) {
@@ -112,6 +118,56 @@ export default class PaymentService {
 
   async refundPayment(paymentId, transactionData = {}) {
     return this.updatePaymentStatus(paymentId, PAYMENT_STATUS.REFUNDED, transactionData);
+  }
+
+  async approveCod(paymentId) {
+    requireDependency(this.paymentRepository, 'Payment');
+    requireDependency(this.orderRepository, 'Order');
+    
+    const id = toPositiveInteger(paymentId, 'payment_id');
+    const payment = await this.paymentRepository.findById(id);
+    if (!payment) throw new NotFoundError('Payment');
+    
+    if (payment.payment_method !== PAYMENT_METHODS.CASH) {
+      throw new ValidationError('Validation failed', [{ field: 'payment_method', message: 'Only Cash payments can be approved via COD flow' }]);
+    }
+    
+    const order = await this.orderRepository.findById(payment.order_id);
+    if (!order) throw new NotFoundError('Order');
+    
+    const transition = validateOrderTransition(order, ORDER_STATUS.SUCCESS, payment);
+    if (!transition.valid) throw new BusinessLogicError(transition.reason);
+    
+    await this.orderRepository.setStatus(order.order_id, ORDER_STATUS.SUCCESS);
+    
+    return enrichPayment(payment);
+  }
+
+  async collectCod(paymentId, collectorData = {}) {
+    requireDependency(this.paymentRepository, 'Payment');
+    requireDependency(this.orderRepository, 'Order');
+    
+    const id = toPositiveInteger(paymentId, 'payment_id');
+    const payment = await this.paymentRepository.findById(id);
+    if (!payment) throw new NotFoundError('Payment');
+    
+    if (payment.payment_method !== PAYMENT_METHODS.CASH) {
+      throw new ValidationError('Validation failed', [{ field: 'payment_method', message: 'Only Cash payments can be collected' }]);
+    }
+    
+    const nowStr = new Date().toISOString();
+    const transactionData = {
+      s: 'collected',
+      c: collectorData.username || 'Admin',
+      ca: nowStr
+    };
+    
+    const transactionId = generateMockPaymentDetails(PAYMENT_METHODS.CASH, transactionData);
+    const updatedPayment = await this.paymentRepository.updateStatus(id, PAYMENT_STATUS.COMPLETED, transactionId);
+    
+    await this.orderRepository.setStatus(payment.order_id, ORDER_STATUS.DELIVERED);
+    
+    return enrichPayment(updatedPayment);
   }
 
   async getRevenueSummary() {
