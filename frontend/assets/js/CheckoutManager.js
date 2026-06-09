@@ -672,8 +672,8 @@ class CheckoutManager {
 
             // Extract order data from nested response
             const orderData = orderRes?.data || orderRes;
-            const orderId = orderData.order_id;
-            const orderStatus = orderData.order_status;
+            const orderId = orderData.order?.order_id || orderData.order_id;
+            const orderStatus = orderData.order?.status || orderData.order_status;
             const payment = orderData.payment;
 
             if (!orderId) {
