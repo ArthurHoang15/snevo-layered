@@ -53,7 +53,6 @@ export default class ImportService {
     }
 
     const created = await this.importRepository.batchCreate(normalizedImports, userId, notes);
-    await this._increaseStocks(normalizedImports);
 
     return {
       imports: created,

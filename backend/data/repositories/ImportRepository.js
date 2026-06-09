@@ -91,12 +91,40 @@ export default class ImportRepository extends BaseRepository {
     return this.findAllWithDetails({ from_date: startDate, to_date: endDate }, options);
   }
 
+  async getOrCreateDefaultSupplier() {
+    try {
+      const { data, error } = await this.db
+        .from('suppliers')
+        .select('supplier_id')
+        .limit(1);
+      if (error) throw new DatabaseError('Failed to fetch suppliers', error);
+
+      if (data && data.length > 0) {
+        return data[0].supplier_id;
+      }
+
+      const { data: newSupplier, error: insertError } = await this.db
+        .from('suppliers')
+        .insert([{ supplier_name: 'Default Supplier', is_active: true }])
+        .select('supplier_id')
+        .single();
+
+      if (insertError) throw new DatabaseError('Failed to create default supplier', insertError);
+      return newSupplier.supplier_id;
+    } catch (error) {
+      if (error instanceof DatabaseError) throw error;
+      throw new DatabaseError(`Get or create default supplier failed: ${error.message}`, error);
+    }
+  }
+
   async batchCreate(imports, userId, notes = null) {
     try {
+      const defaultSupplierId = await this.getOrCreateDefaultSupplier();
+
       const payload = imports.map((item) => this.cleanData({
         variant_id: item.variant_id,
         user_id: userId,
-        supplier_id: item.supplier_id,
+        supplier_id: item.supplier_id || defaultSupplierId,
         quantity_imported: item.quantity_imported,
         import_price: item.import_price,
         notes: item.notes ?? notes,
