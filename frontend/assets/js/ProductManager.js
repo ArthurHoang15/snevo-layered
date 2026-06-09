@@ -75,6 +75,9 @@ class ProductManager {
         this.loadPriceRange(), // ⭐ NEW: Load price range
       ]);
 
+      // Initialize price range UI
+      this.initializePriceRangeUI();
+
       // Load products
       await this.loadProducts();
 
@@ -128,20 +131,8 @@ class ProductManager {
     }
   }
 
-  parseUrlParameters() {
-    const urlParams = new URLSearchParams(window.location.search);
-
-    // Search query
-    if (urlParams.has("search")) {
-      this.currentFilters.search = urlParams.get("search");
-
-      // ✅ Sync navbar search
-      this.syncNavbarSearch();
-    }
-  }
-
   /**
-   * Parse URL parameters
+   * Parse URL parameters and sync with currentFilters state
    */
   parseUrlParameters() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -153,10 +144,36 @@ class ProductManager {
       if (searchInput) searchInput.value = this.currentFilters.search;
     }
 
-    // Category filter
+    // Category filter (support comma-separated values)
     if (urlParams.has("category")) {
-      const categoryId = urlParams.get("category");
-      this.currentFilters.categories = [categoryId];
+      const catVal = urlParams.get("category");
+      this.currentFilters.categories = catVal.split(",").filter(Boolean);
+    }
+
+    // Color filter (support comma-separated color IDs)
+    if (urlParams.has("color")) {
+      const colorVal = urlParams.get("color");
+      this.currentFilters.colors = colorVal
+        .split(",")
+        .map((id) => parseInt(id, 10))
+        .filter((id) => !isNaN(id));
+    }
+
+    // Size filter (support comma-separated size IDs)
+    if (urlParams.has("size")) {
+      const sizeVal = urlParams.get("size");
+      this.currentFilters.sizes = sizeVal
+        .split(",")
+        .map((id) => parseInt(id, 10))
+        .filter((id) => !isNaN(id));
+    }
+
+    // Price filters
+    if (urlParams.has("min_price")) {
+      this.currentFilters.minPrice = parseInt(urlParams.get("min_price"), 10) || null;
+    }
+    if (urlParams.has("max_price")) {
+      this.currentFilters.maxPrice = parseInt(urlParams.get("max_price"), 10) || null;
     }
 
     // Sort
@@ -168,8 +185,11 @@ class ProductManager {
 
     // Page
     if (urlParams.has("page")) {
-      this.currentPage = parseInt(urlParams.get("page")) || 1;
+      this.currentPage = parseInt(urlParams.get("page"), 10) || 1;
     }
+
+    // Sync navbar search input
+    this.syncNavbarSearch();
   }
 
   /**
@@ -205,7 +225,7 @@ class ProductManager {
 
       // Category filter
       if (this.currentFilters.categories.length > 0) {
-        params.category_id = this.currentFilters.categories[0];
+        params.category_id = this.currentFilters.categories.join(",");
       }
 
       // ⭐ Price filters - chỉ gửi khi có giá trị
@@ -253,6 +273,7 @@ class ProductManager {
         this.renderProducts(this.products);
         this.renderPagination(this.totalPages);
         this.updateResultsCount(this.totalProducts);
+        this.updateUrl();
       } else {
         throw new Error(response.message || "Failed to load products");
       }
@@ -309,7 +330,7 @@ class ProductManager {
       .map(
         (color) => `
         <div class="color-option ${
-          this.currentFilters.colors.includes(color.color_id) ? "active" : ""
+          this.currentFilters.colors.includes(color.color_id) ? "selected" : ""
         }" 
             data-color-id="${color.color_id}"
             title="${color.color_name}">
@@ -335,7 +356,7 @@ class ProductManager {
       .map(
         (size) => `
         <button type="button" 
-                class="size-option" 
+                class="size-option ${this.currentFilters.sizes.includes(size.size_id) ? "active" : ""}" 
                 data-size-id="${size.size_id}"
                 aria-label="Size ${size.size_value}">
             ${size.size_value}
@@ -362,10 +383,7 @@ class ProductManager {
     }
 
     // Update UI
-    const colorOption = document.querySelector(`[data-color-id="${colorId}"]`);
-    if (colorOption) {
-      colorOption.classList.toggle("selected");
-    }
+    this.updateFiltersUI();
 
     this.currentPage = 1;
     await this.loadProducts();
@@ -386,7 +404,7 @@ class ProductManager {
     }
 
     // Update UI
-    this.updateSizeFiltersUI();
+    this.updateFiltersUI();
 
     // Reload products
     this.currentPage = 1;
@@ -426,25 +444,7 @@ class ProductManager {
       });
     }
 
-    document
-      .querySelectorAll('#categoryFilters input[type="checkbox"]')
-      .forEach((checkbox) => {
-        checkbox.addEventListener("change", () => this.handleFilterChange());
-      });
-
-    document
-      .querySelectorAll('#brandFilters input[type="checkbox"]')
-      .forEach((checkbox) => {
-        checkbox.addEventListener("change", () => this.handleFilterChange());
-      });
-
-    document.querySelectorAll(".size-btn input").forEach((checkbox) => {
-      checkbox.addEventListener("change", () => this.handleFilterChange());
-    });
-
-    document.querySelectorAll(".color-option").forEach((option) => {
-      option.addEventListener("click", (e) => this.handleColorFilter(e));
-    });
+    // (Checked dynamic elements will have their listeners attached during render)
 
     // Price range
     const minRange = document.getElementById("minPriceRange");
@@ -553,17 +553,13 @@ class ProductManager {
     minRange.max = this.priceRange.max;
     maxRange.max = this.priceRange.max;
 
-    // ⭐ Set initial values (không filter)
-    minRange.value = this.priceRange.min;
-    maxRange.value = this.priceRange.max;
+    // ⭐ Set initial values from filters (if parsed from URL) or defaults
+    minRange.value = this.currentFilters.minPrice !== null ? this.currentFilters.minPrice : this.priceRange.min;
+    maxRange.value = this.currentFilters.maxPrice !== null ? this.currentFilters.maxPrice : this.priceRange.max;
 
     // Set initial display
-    minDisplay.textContent = this.formatPrice(this.priceRange.min);
-    maxDisplay.textContent = this.formatPrice(this.priceRange.max);
-
-    // ⭐ IMPORTANT: Không set filters ban đầu
-    this.currentFilters.minPrice = null;
-    this.currentFilters.maxPrice = null;
+    minDisplay.textContent = this.formatPrice(minRange.value);
+    maxDisplay.textContent = this.formatPrice(maxRange.value);
 
     // Initialize slider track position
     this.updateSliderTrack();
@@ -657,28 +653,64 @@ class ProductManager {
     this.currentFilters.brands = Array.from(
       document.querySelectorAll("#brandFilters input:checked")
     ).map((cb) => cb.value);
-
-    // Sizes
-    this.currentFilters.sizes = Array.from(
-      document.querySelectorAll(".size-btn input:checked")
-    ).map((cb) => cb.value);
   }
 
   /**
-   * Update filters UI
+   * Update filters UI to sync with currentFilters state
    */
   updateFiltersUI() {
-    // Update category checkboxes
-    this.currentFilters.categories.forEach((categoryId) => {
-      const checkbox = document.getElementById(`category${categoryId}`);
-      if (checkbox) checkbox.checked = true;
-    });
+    // 1. Categories checkboxes
+    document
+      .querySelectorAll('#categoryFilters input[type="checkbox"]')
+      .forEach((checkbox) => {
+        checkbox.checked = this.currentFilters.categories.includes(checkbox.value);
+      });
 
-    // Update color selections
-    this.currentFilters.colors.forEach((color) => {
-      const colorOption = document.querySelector(`[data-color="${color}"]`);
-      if (colorOption) colorOption.classList.add("selected");
-    });
+    // 2. Colors options
+    document
+      .querySelectorAll('.color-option')
+      .forEach((colorOption) => {
+        const colorId = parseInt(colorOption.dataset.colorId);
+        if (this.currentFilters.colors.includes(colorId)) {
+          colorOption.classList.add("selected");
+        } else {
+          colorOption.classList.remove("selected");
+        }
+      });
+
+    // 3. Sizes buttons
+    document
+      .querySelectorAll('.size-option')
+      .forEach((sizeOption) => {
+        const sizeId = parseInt(sizeOption.dataset.sizeId);
+        if (this.currentFilters.sizes.includes(sizeId)) {
+          sizeOption.classList.add("active");
+        } else {
+          sizeOption.classList.remove("active");
+        }
+      });
+
+    // 4. Search input
+    const searchInput = document.getElementById("searchInput");
+    if (searchInput) {
+      searchInput.value = this.currentFilters.search || "";
+    }
+
+    // 5. Price range sliders & displays
+    const minRange = document.getElementById("minPriceRange");
+    const maxRange = document.getElementById("maxPriceRange");
+    const minDisplay = document.getElementById("minPriceDisplay");
+    const maxDisplay = document.getElementById("maxPriceDisplay");
+
+    if (minRange && maxRange) {
+      minRange.value = this.currentFilters.minPrice !== null ? this.currentFilters.minPrice : this.priceRange.min;
+      maxRange.value = this.currentFilters.maxPrice !== null ? this.currentFilters.maxPrice : this.priceRange.max;
+      
+      if (minDisplay) minDisplay.textContent = this.formatPrice(minRange.value);
+      if (maxDisplay) maxDisplay.textContent = this.formatPrice(maxRange.value);
+      
+      this.updateSliderTrack();
+    }
   }
 
   /**
@@ -695,7 +727,8 @@ class ProductManager {
         <input class="form-check-input" 
                type="checkbox" 
                value="${cat.category_id}" 
-               id="category${cat.category_id}">
+               id="category${cat.category_id}"
+               ${this.currentFilters.categories.includes(String(cat.category_id)) ? "checked" : ""}>
         <label class="form-check-label" for="category${cat.category_id}">
           ${cat.category_name}
         </label>
@@ -980,21 +1013,8 @@ class ProductManager {
       search: null,
     };
 
-    // Reset UI
-    document
-      .querySelectorAll('input[type="checkbox"]')
-      .forEach((cb) => (cb.checked = false));
-    document
-      .querySelectorAll(".color-option")
-      .forEach((opt) => opt.classList.remove("selected"));
-
-    const minPriceInput = document.getElementById("minPrice");
-    const maxPriceInput = document.getElementById("maxPrice");
-    const searchInput = document.getElementById("searchInput");
-
-    if (minPriceInput) minPriceInput.value = "";
-    if (maxPriceInput) maxPriceInput.value = "";
-    if (searchInput) searchInput.value = "";
+    // Update UI elements unified
+    this.updateFiltersUI();
 
     this.currentPage = 1;
     await this.loadProducts();
@@ -1044,7 +1064,23 @@ class ProductManager {
     }
 
     if (this.currentFilters.categories.length > 0) {
-      params.set("category", this.currentFilters.categories[0]);
+      params.set("category", this.currentFilters.categories.join(","));
+    }
+
+    if (this.currentFilters.colors.length > 0) {
+      params.set("color", this.currentFilters.colors.join(","));
+    }
+
+    if (this.currentFilters.sizes.length > 0) {
+      params.set("size", this.currentFilters.sizes.join(","));
+    }
+
+    if (this.currentFilters.minPrice !== null) {
+      params.set("min_price", this.currentFilters.minPrice);
+    }
+
+    if (this.currentFilters.maxPrice !== null) {
+      params.set("max_price", this.currentFilters.maxPrice);
     }
 
     if (this.currentSort !== "featured") {

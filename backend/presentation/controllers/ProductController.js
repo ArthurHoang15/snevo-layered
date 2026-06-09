@@ -15,7 +15,7 @@ export default class ProductController extends BaseController {
         return this.handleRequest(req, res, async () => {
             const pagination = this.getPaginationParams(req);
             const filters = this.getFilterParams(req, [
-                'category_id', 'min_price', 'max_price', 'brand', 'is_active', 'include_no_variants'
+                'category_id', 'min_price', 'max_price', 'brand', 'is_active', 'include_no_variants', 'color_ids', 'size_ids'
             ]);
             const { sort, order } = pagination;
 
@@ -38,7 +38,7 @@ export default class ProductController extends BaseController {
             const { q, search } = req.query;
             const searchTerm = q || search || '';
             const pagination = this.getPaginationParams(req);
-            const filters = this.getFilterParams(req, ['category_id', 'min_price', 'max_price']);
+            const filters = this.getFilterParams(req, ['category_id', 'min_price', 'max_price', 'color_ids', 'size_ids']);
 
             const result = await this.productService.searchProducts(searchTerm, { filters, pagination });
             this.sendPaginatedResponse(res, result, pagination, 'Search results');
@@ -59,7 +59,7 @@ export default class ProductController extends BaseController {
         return this.handleRequest(req, res, async () => {
             const { categoryId } = req.params;
             const pagination = this.getPaginationParams(req);
-            const filters = this.getFilterParams(req, ['min_price', 'max_price']);
+            const filters = this.getFilterParams(req, ['min_price', 'max_price', 'color_ids', 'size_ids']);
 
             const result = await this.productService.getProductsByCategory(categoryId, { filters, pagination });
             this.sendPaginatedResponse(res, result, pagination, 'Category products fetched');

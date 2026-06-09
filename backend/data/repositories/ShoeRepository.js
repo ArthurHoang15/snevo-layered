@@ -17,14 +17,15 @@ export default class ShoeRepository extends BaseRepository {
   }
 
   _normalizeArrayFilter(value) {
-    if (Array.isArray(value)) return value.filter((item) => item !== undefined && item !== null && item !== '');
-    if (typeof value === 'string') {
+    if (value === undefined || value === null || value === "") return [];
+    if (Array.isArray(value)) return value.map(String).filter((item) => item !== "");
+    if (typeof value === "string") {
       return value
-        .split(',')
+        .split(",")
         .map((item) => item.trim())
         .filter(Boolean);
     }
-    return [];
+    return [String(value)];
   }
 
   _deduplicateShoes(shoes) {
@@ -125,7 +126,8 @@ export default class ShoeRepository extends BaseRepository {
         `, { count: 'exact' });
 
       if (is_active !== undefined) query = query.eq('is_active', is_active);
-      if (category_id) query = query.eq('category_id', category_id);
+      const categoryIds = this._normalizeArrayFilter(category_id);
+      if (categoryIds.length > 0) query = query.in('category_id', categoryIds);
       if (min_price) query = query.gte('base_price', min_price);
       if (max_price) query = query.lte('base_price', max_price);
       if (search) query = query.or(`shoe_name.ilike.%${search}%,description.ilike.%${search}%`);
