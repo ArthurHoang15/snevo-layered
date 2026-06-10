@@ -4,12 +4,12 @@ This document maps the current repository work to the bonus criteria.
 
 ## Current Priority
 
-Cloud deployment to AWS/Azure/GCP is intentionally deferred because account billing/student verification is blocked. The repository is now prepared for the other bonus areas that do not require a paid cloud account:
+AWS Elastic Beanstalk deployment is available, and the repository now includes CI plus AWS CD automation. The remaining bonus evidence should focus on screenshots of the deployed URL, GitHub Actions, health/logging, and distributed local runtime:
 
 | Bonus item | Points | Current readiness | Evidence to show |
 |---|---:|---|---|
-| Cloud provider | +3 | Pending | Cloud Run/Azure/AWS URL after billing access is solved |
-| CI/CD | +3 | Ready | GitHub Actions `CI` workflow passing |
+| Cloud provider | +3 | Ready for evidence | AWS Elastic Beanstalk URL and environment health |
+| CI/CD | +3 | Ready for evidence | GitHub Actions `CI` and `CD - AWS Elastic Beanstalk` workflows passing |
 | Monitoring/logging | +2 | Ready | `/api/health` response and JSON request/error logs |
 | Distributed system | +2 | Ready for local demo | Docker Compose with separate `api` and `frontend` services |
 
@@ -22,11 +22,14 @@ Cloud deployment to AWS/Azure/GCP is intentionally deferred because account bill
    - `frontend`: nginx static web server
    - `api`: Node.js native HTTP API
    - `database/auth`: Supabase cloud
-5. When cloud billing is available, the same API image can be deployed to AWS/Azure/GCP.
+5. AWS Elastic Beanstalk hosts the production-like cloud deployment; GitHub Actions can redeploy tested commits.
 
 ## Quick Evidence Checklist
 
-- GitHub Actions screenshot: workflow green.
+- GitHub Actions screenshot: CI workflow green.
+- GitHub Actions screenshot: AWS CD workflow green.
+- AWS screenshot: Elastic Beanstalk environment health is OK.
+- Browser screenshot: deployed Elastic Beanstalk URL opens the app.
 - Terminal screenshot: `npm run ci` passes locally.
 - Browser or curl screenshot: `http://localhost:3001/api/health`.
 - Terminal screenshot: JSON log line containing `event":"http_request"`.

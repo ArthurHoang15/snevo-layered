@@ -639,3 +639,32 @@ Append one entry after each completed implementation task that changes code or d
 - Ran `npm run ci`; env safety, architecture checks, and all 9 tests passed.
 - Verified Git status only contains the intended script/docs changes plus ignored `local.env` and `node_modules/`.
 
+## 2026-06-10 - AWS Elastic Beanstalk CD Workflow
+
+**Actor:** AI-assisted
+
+**Prompt summary:** AWS deployment succeeded manually, but GitHub Actions only runs CI and does not run CD.
+
+**Implemented:**
+- Added `.github/workflows/aws-eb-deploy.yml` for AWS Elastic Beanstalk deployment.
+- Configured the CD workflow to run quality gates before deploying.
+- Configured deploy triggers for pushes to `main` and manual `workflow_dispatch` runs.
+- Packaged deployments using `git archive` so ignored local files such as `.env`, `local.env`, and `node_modules/` are not uploaded.
+- Documented required GitHub repository secrets and AWS CD evidence for the bonus report.
+
+**Architecture impact:**
+- No backend layer dependency changes.
+- CI/CD changes are isolated to GitHub Actions and documentation.
+
+**Files changed:**
+- `.github/workflows/aws-eb-deploy.yml`
+- `docs/bonus/CI_CD.md`
+- `docs/bonus/BONUS_READINESS.md`
+- `docs/ai/PHASE_STATUS.md`
+- `docs/ai/IMPLEMENTATION_LOG.md`
+
+**Verification:**
+- Ran `npm run ci`; env safety, architecture checks, and all 9 tests passed.
+- Ran `git diff --check`; no whitespace errors were reported.
+- Confirmed CD deployment itself requires GitHub repository secrets and must be verified in GitHub Actions after secrets are configured.
+

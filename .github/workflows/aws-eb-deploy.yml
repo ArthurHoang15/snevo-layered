@@ -1,0 +1,133 @@
+name: CD - AWS Elastic Beanstalk
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aws-elastic-beanstalk-production
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: 20
+  EB_VERSION_LABEL: snevo-${{ github.run_number }}-${{ github.run_attempt }}-${{ github.sha }}
+  EB_BUNDLE: snevo-${{ github.run_number }}-${{ github.run_attempt }}-${{ github.sha }}.zip
+  EB_S3_KEY: github-actions/${{ github.repository }}/snevo-${{ github.run_number }}-${{ github.run_attempt }}-${{ github.sha }}.zip
+
+jobs:
+  quality-gates:
+    name: Quality gates
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm install --package-lock=false
+
+      - name: Run CI checks
+        run: npm run ci
+
+  deploy:
+    name: Deploy to AWS Elastic Beanstalk
+    runs-on: ubuntu-latest
+    needs: quality-gates
+    timeout-minutes: 30
+    environment: production
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate deployment secrets
+        env:
+          AWS_ACCESS_KEY_ID_VALUE: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY_VALUE: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION_VALUE: ${{ secrets.AWS_REGION }}
+          AWS_EB_APPLICATION_NAME_VALUE: ${{ secrets.AWS_EB_APPLICATION_NAME }}
+          AWS_EB_ENVIRONMENT_NAME_VALUE: ${{ secrets.AWS_EB_ENVIRONMENT_NAME }}
+          AWS_EB_BUCKET_VALUE: ${{ secrets.AWS_EB_BUCKET }}
+        run: |
+          missing=0
+          for name in \
+            AWS_ACCESS_KEY_ID_VALUE \
+            AWS_SECRET_ACCESS_KEY_VALUE \
+            AWS_REGION_VALUE \
+            AWS_EB_APPLICATION_NAME_VALUE \
+            AWS_EB_ENVIRONMENT_NAME_VALUE \
+            AWS_EB_BUCKET_VALUE
+          do
+            if [ -z "${!name}" ]; then
+              public_name="${name%_VALUE}"
+              echo "::error::Missing GitHub secret ${public_name}"
+              missing=1
+            fi
+          done
+          exit "$missing"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Create deployment bundle
+        run: |
+          git archive --format=zip --output="$EB_BUNDLE" HEAD
+          if unzip -Z1 "$EB_BUNDLE" | grep -E '(^|/)(local\.env|\.env)$|(^|/)node_modules/'; then
+            echo "::error::Deployment bundle contains local environment or dependency files"
+            exit 1
+          fi
+
+      - name: Upload bundle to S3
+        env:
+          AWS_EB_BUCKET: ${{ secrets.AWS_EB_BUCKET }}
+        run: aws s3 cp "$EB_BUNDLE" "s3://${AWS_EB_BUCKET}/${EB_S3_KEY}"
+
+      - name: Create Elastic Beanstalk application version
+        env:
+          AWS_EB_APPLICATION_NAME: ${{ secrets.AWS_EB_APPLICATION_NAME }}
+          AWS_EB_BUCKET: ${{ secrets.AWS_EB_BUCKET }}
+        run: |
+          aws elasticbeanstalk create-application-version \
+            --application-name "$AWS_EB_APPLICATION_NAME" \
+            --version-label "$EB_VERSION_LABEL" \
+            --description "GitHub Actions run ${GITHUB_RUN_ID}, commit ${GITHUB_SHA}" \
+            --source-bundle S3Bucket="$AWS_EB_BUCKET",S3Key="$EB_S3_KEY"
+
+      - name: Update Elastic Beanstalk environment
+        env:
+          AWS_EB_APPLICATION_NAME: ${{ secrets.AWS_EB_APPLICATION_NAME }}
+          AWS_EB_ENVIRONMENT_NAME: ${{ secrets.AWS_EB_ENVIRONMENT_NAME }}
+        run: |
+          aws elasticbeanstalk update-environment \
+            --application-name "$AWS_EB_APPLICATION_NAME" \
+            --environment-name "$AWS_EB_ENVIRONMENT_NAME" \
+            --version-label "$EB_VERSION_LABEL"
+
+          aws elasticbeanstalk wait environment-updated \
+            --application-name "$AWS_EB_APPLICATION_NAME" \
+            --environment-names "$AWS_EB_ENVIRONMENT_NAME"
+
+      - name: Show deployment status
+        env:
+          AWS_EB_APPLICATION_NAME: ${{ secrets.AWS_EB_APPLICATION_NAME }}
+          AWS_EB_ENVIRONMENT_NAME: ${{ secrets.AWS_EB_ENVIRONMENT_NAME }}
+        run: |
+          aws elasticbeanstalk describe-environments \
+            --application-name "$AWS_EB_APPLICATION_NAME" \
+            --environment-names "$AWS_EB_ENVIRONMENT_NAME" \
+            --query 'Environments[0].{Status:Status,Health:Health,CNAME:CNAME,VersionLabel:VersionLabel}' \
+            --output table

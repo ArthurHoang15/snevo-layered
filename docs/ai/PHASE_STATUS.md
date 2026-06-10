@@ -18,7 +18,7 @@ Refactoring completed successfully. The layered architecture is fully implemente
 | Bonus item | Status | Notes |
 |---|---|---|
 | Cloud provider deployment | Ready for AWS evidence | AWS Elastic Beanstalk environment is running; runtime frontend config now reads public auth settings from AWS environment properties. |
-| CI/CD | Ready | GitHub Actions workflow runs env safety, architecture checks, and tests. |
+| CI/CD | Ready for AWS secrets | GitHub Actions CI runs env safety, architecture checks, and tests; AWS Elastic Beanstalk CD workflow is added and runs after required repository secrets are configured. |
 | Monitoring/logging | Ready | Backend exposes health endpoint and structured JSON request/error logs. |
 | Distributed system | Ready for local demo | Docker Compose runs separate API and frontend services. |
 
