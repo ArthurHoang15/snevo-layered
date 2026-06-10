@@ -668,3 +668,30 @@ Append one entry after each completed implementation task that changes code or d
 - Ran `git diff --check`; no whitespace errors were reported.
 - Confirmed CD deployment itself requires GitHub repository secrets and must be verified in GitHub Actions after secrets are configured.
 
+## 2026-06-10 - Google Login Result Shape Fix
+
+**Actor:** AI-assisted
+
+**Prompt summary:** Google login succeeds, but the UI still shows a failed-login toast/tooltip.
+
+**Implemented:**
+- Normalized frontend `AuthService` auth responses to include `success`, `data`, `error`, and `rawError`.
+- Returned `success: true` for successful Google OAuth redirects so UI handlers do not show false failure messages.
+- Updated the standalone login modal to consume the normalized result shape.
+- Added frontend auth result tests covering successful Google OAuth redirect and provider-error cases.
+
+**Architecture impact:**
+- Frontend-only change.
+- No backend layer dependency changes.
+- Preserved existing Supabase OAuth behavior and API endpoints.
+
+**Files changed:**
+- `frontend/assets/js/services/AuthService.js`
+- `frontend/assets/js/LoginModal.js`
+- `test/frontend-auth-result.test.js`
+- `docs/ai/IMPLEMENTATION_LOG.md`
+
+**Verification:**
+- Ran `npm run ci`; env safety, architecture checks, and all 11 tests passed.
+- Added frontend auth tests for Google OAuth success and failure result shapes.
+
