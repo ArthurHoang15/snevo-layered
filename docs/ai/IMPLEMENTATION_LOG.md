@@ -524,3 +524,29 @@ Append one entry after each completed implementation task that changes code or d
 **Remaining notes:**
 - Cloud provider deployment remains pending until the team gets AWS/Azure/GCP billing or student verification access.
 
+## 2026-06-10 - AWS Runtime Frontend Auth Configuration
+
+**Actor:** AI-assisted
+
+**Prompt summary:** The AWS Elastic Beanstalk deployment is running, but Google login fails because the static frontend config still uses safe placeholder values.
+
+**Implemented:**
+- Added runtime generation for `/assets/js/config.js` in `backend/server.js` so AWS environment properties provide frontend-safe values such as `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `GOOGLE_CLIENT_ID`.
+- Kept secrets out of source control; only public browser config is emitted, and `SUPABASE_SERVICE_ROLE_KEY` is not exposed to the frontend config script.
+- Added a missing `Application.toggleMobileMenu()` method to prevent a frontend console error when the navbar toggler is clicked.
+
+**Architecture impact:**
+- Kept runtime configuration in the bootstrap/static serving boundary.
+- Preserved the layered backend dependency direction; no service/repository/controller dependency changes were introduced.
+
+**Files changed:**
+- `backend/server.js`
+- `frontend/assets/js/Application.js`
+- `docs/ai/PHASE_STATUS.md`
+- `docs/ai/IMPLEMENTATION_LOG.md`
+
+**Verification:**
+- Ran `npm run ci`; env safety, architecture checks, and all 9 tests passed.
+- Smoke-tested `/api/health` and `/assets/js/config.js` on a temporary local server with production-like env vars.
+- Verified runtime frontend config includes public Supabase/Google values and does not expose `SUPABASE_SERVICE_ROLE_KEY`.
+

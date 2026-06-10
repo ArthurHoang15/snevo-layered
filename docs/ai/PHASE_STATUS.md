@@ -17,7 +17,7 @@ Refactoring completed successfully. The layered architecture is fully implemente
 
 | Bonus item | Status | Notes |
 |---|---|---|
-| Cloud provider deployment | Blocked | AWS/Azure/GCP account billing or student verification is not currently available. |
+| Cloud provider deployment | Ready for AWS evidence | AWS Elastic Beanstalk environment is running; runtime frontend config now reads public auth settings from AWS environment properties. |
 | CI/CD | Ready | GitHub Actions workflow runs env safety, architecture checks, and tests. |
 | Monitoring/logging | Ready | Backend exposes health endpoint and structured JSON request/error logs. |
 | Distributed system | Ready for local demo | Docker Compose runs separate API and frontend services. |
