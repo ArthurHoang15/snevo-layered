@@ -7,6 +7,7 @@ import path from 'path';
 import fs from 'fs';
 import mime from 'mime-types';
 import dotenv from 'dotenv';
+import logger from './infrastructure/utils/logger.js';
 
 // Load environment variables
 dotenv.config({
@@ -40,6 +41,7 @@ import corsMiddleware from './presentation/middleware/cors.js';
 class Server {
     constructor() {
         this.port = Number(process.env.PORT) || 3001;
+        this.host = process.env.HOST || '0.0.0.0';
         this.maxRetries = 5;
 
         // Build container & resolve controllers
@@ -82,8 +84,6 @@ class Server {
     }
 
     async handleApiRequest(req, res, pathname) {
-        console.log('API Request:', req.method, pathname);
-        
         try {
             // Apply CORS middleware
             const isCorsPreflight = corsMiddleware.configure(req, res);
@@ -101,7 +101,12 @@ class Server {
             let body = {};
             if (['POST', 'PUT', 'PATCH'].includes(req.method)) {
                 if (isUploadRoute || isMultipart) {
-                    console.log('Skipping JSON body parse for upload/multipart request');
+                    logger.info('request_body_parse_skipped', {
+                        requestId: req.requestId,
+                        method: req.method,
+                        path: pathname,
+                        contentType: req.headers['content-type']
+                    });
                 } else {
                     body = await this.parseBody(req);
                     req.body = body;
@@ -180,7 +185,11 @@ class Server {
             }
 
         } catch (error) {
-            console.error('API Error:', error);
+            logger.error('api_request_failed', error, {
+                requestId: req.requestId,
+                method: req.method,
+                path: pathname
+            });
             this.sendError(res, 'Internal server error', 500);
         }
     }
@@ -194,26 +203,49 @@ class Server {
         server.on('error', (err) => {
             if (err && err.code === 'EADDRINUSE' && retryCount < this.maxRetries) {
                 const nextPort = this.port + 1;
-                console.warn(`⚠️  Port ${this.port} in use, retrying on ${nextPort}...`);
+                logger.warn('server_port_in_use_retrying', {
+                    port: this.port,
+                    nextPort
+                });
                 this.port = nextPort;
                 setTimeout(() => this.start(retryCount + 1), 250);
             } else {
-                console.error('❌ Server failed to start:', err);
+                logger.error('server_start_failed', err, {
+                    port: this.port
+                });
                 process.exit(1);
             }
         });
 
-        server.listen(this.port, () => {
-            console.log(`🚀 Server running on port ${this.port}`);
-            console.log(`📱 Environment: ${process.env.NODE_ENV || 'development'}`);
+        server.listen(this.port, this.host, () => {
+            logger.info('server_started', {
+                host: this.host,
+                port: this.port
+            });
         });
     }
 
     // Handle incoming requests (API + static files)
     async handleRequest(req, res) {
+        const requestContext = logger.createRequestContext(req);
+        req.requestId = requestContext.requestId;
+        res.setHeader('X-Request-Id', requestContext.requestId);
+        res.on('finish', () => logger.httpRequest(req, res, requestContext));
+
         try {
             const parsedUrl = url.parse(req.url || '/');
             const pathname = parsedUrl.pathname || '/';
+
+            if (pathname === '/api/health' || pathname === '/health') {
+                this.sendJson(res, {
+                    success: true,
+                    status: 'ok',
+                    service: process.env.APP_NAME || 'snevo-layered',
+                    environment: process.env.NODE_ENV || 'development',
+                    timestamp: new Date().toISOString()
+                });
+                return;
+            }
 
             // Route API requests
             if (pathname.startsWith('/api/')) {
@@ -273,6 +305,11 @@ class Server {
             });
             stream.pipe(res);
         } catch (err) {
+            logger.error('request_failed', err, {
+                requestId: req.requestId,
+                method: req.method,
+                url: req.url
+            });
             res.writeHead(500, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ message: 'Internal Server Error' }));
         }

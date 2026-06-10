@@ -13,6 +13,15 @@
 
 Refactoring completed successfully. The layered architecture is fully implemented, all dependencies are wired via the container, and the server boots correctly with no import or syntax errors.
 
+## Bonus Readiness
+
+| Bonus item | Status | Notes |
+|---|---|---|
+| Cloud provider deployment | Blocked | AWS/Azure/GCP account billing or student verification is not currently available. |
+| CI/CD | Ready | GitHub Actions workflow runs env safety, architecture checks, and tests. |
+| Monitoring/logging | Ready | Backend exposes health endpoint and structured JSON request/error logs. |
+| Distributed system | Ready for local demo | Docker Compose runs separate API and frontend services. |
+
 ## Blocking & Architectural Notes
 
 - `REFACTOR_TEAM_PLAN.md` is currently local/ignored and remains available for reference.

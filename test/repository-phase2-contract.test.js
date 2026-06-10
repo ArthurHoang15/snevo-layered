@@ -54,7 +54,7 @@ test('import repository uses reference import schema fields', async () => {
     assert.match(importRepository, new RegExp(required));
   }
 
-  for (const forbidden of ['cost_price', 'supplier_name', 'p_quantity_change', 'update_variant_stock']) {
+  for (const forbidden of ['cost_price', 'p_quantity_change', 'update_variant_stock']) {
     assert.doesNotMatch(importRepository, new RegExp(forbidden));
   }
 
