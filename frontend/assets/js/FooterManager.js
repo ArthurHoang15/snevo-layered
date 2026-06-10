@@ -4,7 +4,7 @@ const footerHTML = `
         <div class="row gy-4">
             <!-- Logo & Description -->
             <div class="col-lg-4 col-md-6">
-                <img src="../assets/images/ui/logo.svg" alt="Snevo Logo" class="footer-logo mb-3">
+                <img src="../assets/images/ui/logo.webp" alt="Snevo Logo" class="footer-logo mb-3">
                 <p class="text-muted small mb-0">Premium athletic footwear for champions. Just Do It.</p>
             </div>
 

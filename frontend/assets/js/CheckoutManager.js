@@ -202,7 +202,7 @@ class CheckoutManager {
             const itemTotal = itemPrice * item.quantity;
             html += `
                 <div class="cart-item-summary">
-                    <img src="${item.variant_image || '/assets/images/ui/thian.jpg'}" alt="Product">
+                    <img src="${item.variant_image || '/assets/images/ui/thian.webp'}" alt="Product">
                     <div class="flex-grow-1">
                         <h5 class="mb-1">${item.shoe_name || 'Product'}</h5>
                         <p class="text-muted small mb-0">

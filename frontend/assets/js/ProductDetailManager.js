@@ -281,7 +281,7 @@ class ProductDetailManager {
 
     // Set main image
     const mainImage = document.querySelector("#mainImage img");
-    mainImage.src = product.image_url || "/assets/images/placeholder-shoe.png";
+    mainImage.src = product.image_url || "/assets/images/products/shoes_1.webp";
     mainImage.alt = product.shoe_name;
 
     // Render thumbnails (use same image for demo)
@@ -738,7 +738,7 @@ class ProductDetailManager {
     sizeGuideLink.addEventListener("click", (e) => {
       e.preventDefault();
 
-      const imagePath = "../assets/images/us-size.jpeg";
+      const imagePath = "../assets/images/us-size.webp";
       sizeGuideImg.src = imagePath;
 
       // ✅ FIX: Dùng display flex thay vì inline style

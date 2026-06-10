@@ -123,24 +123,24 @@ body {
 
 #slide1 
 {
-    background-image: url('../images/ui/running.jpg');
+    background-image: url('../images/ui/running.webp');
     background-size: cover;
  }
 
 #slide2 
 { 
-    background-image: url('../images/ui/football.jpg'); 
+    background-image: url('../images/ui/football.webp'); 
     background-size: cover; 
 }
 #slide3 {
-    background-image: url('../images/ui/basketball.jpg');
+    background-image: url('../images/ui/basketball.webp');
     background-size: cover;
 }
 #slide4 {
-    background-image: url('../images/ui/training.jpg');
+    background-image: url('../images/ui/training.webp');
     background-size: cover;
 }
 #slide5 {
-    background-image: url('../images/ui/styles.jpg');
+    background-image: url('../images/ui/styles.webp');
     background-size: cover;
 }

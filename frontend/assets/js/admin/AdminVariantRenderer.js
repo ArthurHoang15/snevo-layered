@@ -93,7 +93,7 @@ class AdminVariantRenderer {
                                 <div class="col-md-4">
                                     <img src="${
                                       shoe.image_url ||
-                                      "/assets/images/placeholder.png"
+                                      "/assets/images/products/shoes_1.webp"
                                     }" 
                                          class="img-fluid rounded shadow-sm" 
                                          alt="${shoe.shoe_name}"

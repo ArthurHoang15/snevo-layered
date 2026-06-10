@@ -291,7 +291,7 @@ class AdminProductRenderer {
                 title="Click to view details">
                 <td>
                     <img src="${
-                      shoe.image_url || "/assets/images/placeholder.png"
+                      shoe.image_url || "/assets/images/products/shoes_1.webp"
                     }" 
                          alt="${shoe.shoe_name}" 
                          class="img-thumbnail"

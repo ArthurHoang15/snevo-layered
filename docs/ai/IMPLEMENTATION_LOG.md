@@ -550,3 +550,34 @@ Append one entry after each completed implementation task that changes code or d
 - Smoke-tested `/api/health` and `/assets/js/config.js` on a temporary local server with production-like env vars.
 - Verified runtime frontend config includes public Supabase/Google values and does not expose `SUPABASE_SERVICE_ROLE_KEY`.
 
+## 2026-06-10 - WebP Asset Optimization And AWS Artifact Cleanup
+
+**Actor:** AI-assisted
+
+**Prompt summary:** Convert repository images to WebP, update frontend references, remove AWS upload zip files after deployment, and commit the cleanup.
+
+**Implemented:**
+- Converted all local frontend image assets under `frontend/assets/images` from SVG/JPEG to WebP.
+- Updated HTML, CSS, and JavaScript references to use the new `.webp` filenames.
+- Replaced broken local fallback image references such as `placeholder.png`, `placeholder-shoe.png`, and `shoes1.svg` with an existing WebP fallback.
+- Removed local AWS deployment archive files from the repository.
+
+**Architecture impact:**
+- No backend layer dependency changes.
+- Static asset paths remain served through the existing frontend/static server path.
+
+**Files changed:**
+- `frontend/assets/images/**`
+- `frontend/assets/css/carousel.css`
+- `frontend/assets/js/*`
+- `frontend/assets/js/admin/*`
+- `frontend/pages/index.html`
+- `snevo-eb.zip`
+- `snevo-eb-auth-fix.zip`
+- `docs/ai/IMPLEMENTATION_LOG.md`
+
+**Verification:**
+- Ran `npm run ci`; env safety, architecture checks, and all 9 tests passed.
+- Smoke-tested `/`, `/api/health`, and representative WebP assets through the local server.
+- Verified no old local image formats remain under `frontend/assets/images`; remaining `.svg/.jpg/.png` references are external Google auth icons or upload-processing rules.
+

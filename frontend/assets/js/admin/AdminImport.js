@@ -71,7 +71,7 @@ class AdminImport {
     showImportModal() {
         document.getElementById("importShoeName").textContent = this.core.currentShoe.shoe_name;
         document.getElementById("importShoeImage").src = 
-            this.core.currentShoe.image_url || "/assets/images/placeholder.png";
+            this.core.currentShoe.image_url || "/assets/images/products/shoes_1.webp";
         document.getElementById("importCurrentStock").textContent = 
             this.core.currentShoe.stock_info?.total_stock || 0;
         document.getElementById("importShoeInfo").textContent = 

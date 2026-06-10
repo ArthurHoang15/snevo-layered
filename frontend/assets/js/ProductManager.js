@@ -766,7 +766,7 @@ class ProductManager {
         const imageUrl =
           product.image_url && product.image_url.trim() !== ""
             ? product.image_url
-            : "/assets/images/ui/thian.jpg";
+            : "/assets/images/ui/thian.webp";
 
         // Generate star rating HTML
         const avgRating = product.average_rating || 0;
@@ -781,7 +781,7 @@ class ProductManager {
                 <img src="${imageUrl}" 
                     alt="${product.shoe_name}" 
                     class="card-img-top"
-                    onerror="this.src='../assets/images/ui/shoes1.svg'"
+                    onerror="this.src='/assets/images/products/shoes_1.webp'"
                     loading="lazy">
                 </div>
                 <div class="card-body">
