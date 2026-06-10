@@ -26,7 +26,7 @@ Refactoring completed successfully. The layered architecture is fully implemente
 
 - `REFACTOR_TEAM_PLAN.md` is currently local/ignored and remains available for reference.
 - `node_modules/` is local only and ignored.
-- Supabase environment variables must be configured in a `.env` file at the root to run in full DB mode. If missing, the app runs in mock/fallback mode (allowing frontend serving while DB queries fail safely).
+- Supabase environment variables must be configured in root `.env` or ignored `local.env` to run in full DB mode. Real process environment variables still take priority for cloud deployment. If missing, the app runs in mock/fallback mode (allowing frontend serving while DB queries fail safely).
 - `Snevo-reference/schema.sql` does not define the `carts` table used by the reference cart model/frontend; this remains documented for integration.
 - `Snevo-reference/schema.sql` does not define `shoes.is_featured`.
 - Phase 3 pricing defaults keep tax and shipping at 0.

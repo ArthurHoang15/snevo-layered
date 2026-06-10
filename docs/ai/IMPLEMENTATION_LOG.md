@@ -581,3 +581,35 @@ Append one entry after each completed implementation task that changes code or d
 - Smoke-tested `/`, `/api/health`, and representative WebP assets through the local server.
 - Verified no old local image formats remain under `frontend/assets/images`; remaining `.svg/.jpg/.png` references are external Google auth icons or upload-processing rules.
 
+## 2026-06-10 - Local Environment Loading For Auth
+
+**Actor:** AI-assisted
+
+**Prompt summary:** Local login fails even though `local.env` contains the Supabase and Google OAuth settings.
+
+**Implemented:**
+- Added a shared environment loader that reads root `.env` first and ignored `local.env` as a fallback without overriding real process environment variables.
+- Wired the server to load environment variables before building the dependency container and runtime frontend config.
+- Updated frontend build/dev config scripts to understand `local.env`.
+- Simplified `npm run dev` so local development uses the runtime `/assets/js/config.js` response instead of rewriting the tracked source config file.
+
+**Architecture impact:**
+- Kept environment loading in infrastructure utilities.
+- No business service, repository, controller, or route dependency direction changed.
+- Local secrets remain ignored and are not emitted to source-controlled files.
+
+**Files changed:**
+- `backend/infrastructure/utils/environment.js`
+- `backend/server.js`
+- `scripts/dev-config.js`
+- `scripts/build-frontend.js`
+- `package.json`
+- `docs/ai/PHASE_STATUS.md`
+- `docs/ai/IMPLEMENTATION_LOG.md`
+
+**Verification:**
+- Ran `npm run ci`; env safety, architecture checks, and all 9 tests passed.
+- Smoke-tested `/api/health` on a temporary local server with `local.env`.
+- Verified runtime `/assets/js/config.js` contains valid public Supabase and Google OAuth settings.
+- Verified runtime frontend config does not expose `SUPABASE_SERVICE_ROLE_KEY` or `GOOGLE_CLIENT_SECRET`.
+

@@ -6,13 +6,8 @@ import url from 'url';
 import path from 'path';
 import fs from 'fs';
 import mime from 'mime-types';
-import dotenv from 'dotenv';
+import './infrastructure/utils/environment.js';
 import logger from './infrastructure/utils/logger.js';
-
-// Load environment variables
-dotenv.config({
-  path: path.join(process.cwd(), '.env')
-});
 
 // Import Dependency Injection Container
 import buildContainer from './container.js';

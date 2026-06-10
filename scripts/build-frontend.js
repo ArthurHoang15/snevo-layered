@@ -9,14 +9,14 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import fs from 'fs-extra';
 import { glob } from 'glob';
-import dotenv from 'dotenv';
+import { loadEnvironment } from '../backend/infrastructure/utils/environment.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const rootDir = join(__dirname, '..');
 
-// Load environment variables
-dotenv.config({ path: join(rootDir, '.env') });
+// Load environment variables from .env, then local.env as a fallback.
+loadEnvironment(rootDir);
 
 // Environment variables to inject into frontend
 const FRONTEND_ENV_VARS = {
