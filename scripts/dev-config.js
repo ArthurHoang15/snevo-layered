@@ -8,14 +8,14 @@
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import fs from 'fs-extra';
-import dotenv from 'dotenv';
+import { loadEnvironment } from '../backend/infrastructure/utils/environment.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const rootDir = join(__dirname, '..');
 
-// Load environment variables
-dotenv.config({ path: join(rootDir, '.env') });
+// Load environment variables from .env, then local.env as a fallback.
+loadEnvironment(rootDir);
 
 // Environment variables to inject into frontend
 const FRONTEND_ENV_VARS = {
@@ -34,7 +34,7 @@ async function generateDevConfig() {
         
         const configContent = `/**
  * Frontend Configuration - Development with Environment Variables (Injected)
- * Generated from .env for development use by scripts/dev-config.js
+ * Generated from .env/local.env for development use by scripts/dev-config.js
  */
 
 // Supabase Configuration
@@ -78,10 +78,10 @@ console.log('🔑 Google Auth:', window.APP_CONFIG.features.googleAuth ? 'enable
 
 // Validation warnings
 if (window.SUPABASE_URL.includes('your-project-id')) {
-    console.warn('⚠️  Please set SUPABASE_URL in your .env file');
+    console.warn('⚠️  Please set SUPABASE_URL in your .env or local.env file');
 }
 if (window.SUPABASE_ANON_KEY === 'your-anon-key') {
-    console.warn('⚠️  Please set SUPABASE_ANON_KEY in your .env file');
+    console.warn('⚠️  Please set SUPABASE_ANON_KEY in your .env or local.env file');
 }
 
 // Export for module systems

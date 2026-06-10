@@ -147,7 +147,7 @@ class CartManager {
             if (it.shoe_name) {
                 // Flattened structure (from previewOrder)
                 title = it.shoe_name || 'Product';
-                img = it.image_url || '../assets/images/ui/hero_image.svg';
+                img = it.image_url || '../assets/images/ui/hero_image.webp';
                 variantText = `${it.color_name || ''} / ${it.size_label || ''}`.trim();
             } else {
                 // Nested structure (from CartAPI.getCart)
@@ -156,7 +156,7 @@ class CartManager {
                 const color = v.colors || {};
                 const size = v.sizes || {};
                 title = shoe.shoe_name || 'Product';
-                img = shoe.image_url || '../assets/images/ui/hero_image.svg';
+                img = shoe.image_url || '../assets/images/ui/hero_image.webp';
                 variantText = `${color.color_name || ''} / ${size.size_value || ''}`.trim();
             }
             

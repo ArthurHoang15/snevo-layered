@@ -499,7 +499,7 @@ class NavbarManager {
             <nav class="navbar navbar-expand-lg navbar-light bg-transparent fixed-top " id="unifiedNavbar" style="margin: 0;">
                 <div class="container">
                     <a class="navbar-brand" href="#" data-navbar-brand>
-                        <img src="../assets/images/ui/logo.svg" alt="SNEVO" height="50">
+                        <img src="../assets/images/ui/logo.webp" alt="SNEVO" height="50">
                     </a>                    
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                         <span class="navbar-toggler-icon"></span>
@@ -536,7 +536,7 @@ class NavbarManager {
                             </li>
                             <li class="nav-item" id="cartNavItem">
                                 <a class="nav-link position-relative" href="#" data-navbar-link="cart">
-                                    <img src="../assets/images/ui/cart.svg" alt="Cart" height="23" width="23">
+                                    <img src="../assets/images/ui/cart.webp" alt="Cart" height="23" width="23">
                                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-white text-black" id="cartCount">
                                         0
                                     </span>
