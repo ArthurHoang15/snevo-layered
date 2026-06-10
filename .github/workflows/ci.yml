@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - develop
+      - "feature/**"
       - "feat/**"
       - "fix/**"
       - "refactor/**"
@@ -36,3 +37,23 @@ jobs:
 
       - name: Run tests
         run: npm test
+
+  cd-preview:
+    name: CD preview package
+    runs-on: ubuntu-latest
+    needs: quality-gates
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create deployment bundle preview
+        run: |
+          git archive --format=zip --output=snevo-preview.zip HEAD
+          if unzip -Z1 snevo-preview.zip | grep -E '(^|/)(local\.env|\.env)$|(^|/)node_modules/'; then
+            echo "::error::Deployment bundle contains local environment or dependency files"
+            exit 1
+          fi
+
+      - name: Confirm deployment readiness
+        run: echo "Deployment bundle preview is clean. AWS CD deploys on main or manual workflow dispatch."

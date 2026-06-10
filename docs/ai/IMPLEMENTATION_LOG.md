@@ -695,3 +695,26 @@ Append one entry after each completed implementation task that changes code or d
 - Ran `npm run ci`; env safety, architecture checks, and all 11 tests passed.
 - Added frontend auth tests for Google OAuth success and failure result shapes.
 
+## 2026-06-10 - CI Trigger And CD Preview Check
+
+**Actor:** AI-assisted
+
+**Prompt summary:** A trigger commit on the feature branch did not show the expected CI/CD checks on GitHub.
+
+**Implemented:**
+- Added `feature/**` to the CI workflow push branch filters.
+- Added a `CD preview package` job to the existing CI workflow so PR/feature branch checks include deploy-bundle validation without deploying to AWS.
+- Kept real AWS Elastic Beanstalk deployment restricted to the dedicated CD workflow on `main` or manual dispatch.
+
+**Architecture impact:**
+- CI/CD workflow-only change.
+- No backend or frontend runtime behavior changed.
+
+**Files changed:**
+- `.github/workflows/ci.yml`
+- `docs/ai/IMPLEMENTATION_LOG.md`
+
+**Verification:**
+- Ran `npm run ci`; env safety, architecture checks, and all 11 tests passed.
+- Ran `git diff --check`; no whitespace errors were reported.
+
