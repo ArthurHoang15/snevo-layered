@@ -613,3 +613,29 @@ Append one entry after each completed implementation task that changes code or d
 - Verified runtime `/assets/js/config.js` contains valid public Supabase and Google OAuth settings.
 - Verified runtime frontend config does not expose `SUPABASE_SERVICE_ROLE_KEY` or `GOOGLE_CLIENT_SECRET`.
 
+## 2026-06-10 - Keep Frontend Config Source Clean
+
+**Actor:** AI-assisted
+
+**Prompt summary:** Running local config tooling keeps dirtying the tracked `frontend/assets/js/config.js` file.
+
+**Implemented:**
+- Converted `scripts/dev-config.js` from a source-file generator into a read-only local configuration inspector.
+- Kept frontend runtime config generation in `backend/server.js` at `/assets/js/config.js`.
+- Updated README and structure documentation to remove stale instructions that told developers to rewrite tracked config.
+
+**Architecture impact:**
+- No layer dependency changes.
+- Preserves frontend behavior while keeping source-controlled config on safe defaults.
+
+**Files changed:**
+- `scripts/dev-config.js`
+- `README.md`
+- `STRUCTURE.md`
+- `docs/ai/IMPLEMENTATION_LOG.md`
+
+**Verification:**
+- Ran `npm run dev:config`; it reported masked config values and did not modify `frontend/assets/js/config.js`.
+- Ran `npm run ci`; env safety, architecture checks, and all 9 tests passed.
+- Verified Git status only contains the intended script/docs changes plus ignored `local.env` and `node_modules/`.
+
