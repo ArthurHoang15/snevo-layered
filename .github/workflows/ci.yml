@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - develop
+      - "feat/**"
+      - "fix/**"
+      - "refactor/**"
+      - "refracttor/**"
+
+jobs:
+  quality-gates:
+    name: Quality gates
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install --package-lock=false
+
+      - name: Check environment safety
+        run: npm run check:env
+
+      - name: Check layered architecture rules
+        run: npm run check:architecture
+
+      - name: Run tests
+        run: npm test
