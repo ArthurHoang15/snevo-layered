@@ -471,3 +471,56 @@ Append one entry after each completed implementation task that changes code or d
 - Ran `npm install` and generated config using `npm run dev:config`.
 - Successfully booted the server using `node backend/server.js` on port 3001, verifying no import, syntax, or wiring errors.
 
+## 2026-06-10 - Bonus Readiness Without Cloud Billing
+
+**Actor:** AI-assisted
+
+**Prompt summary:** Cloud deployment is blocked by billing/student verification, so prepare the remaining bonus criteria first: CI/CD, monitoring/logging, and distributed-system demo.
+
+**Implemented:**
+- Added GitHub Actions CI workflow with env safety, layered architecture checks, and test execution.
+- Added reusable npm scripts for `check:env`, `check:architecture`, and `ci`.
+- Added environment safety scanner to prevent tracked `.env`/`local.env` files and common leaked token patterns.
+- Added architecture scanner for service, repository, controller, and infrastructure dependency rules.
+- Aligned the repository contract test with the current schema by allowing `suppliers.supplier_name` while still blocking old import/stock workflow fields.
+- Sanitized `frontend/assets/js/config.js` so source control keeps safe placeholder defaults instead of local injected values.
+- Added structured JSON logging with request IDs, request duration, status code, and error metadata.
+- Added `/api/health` and `/health` endpoints for monitoring and container health checks.
+- Added Dockerfiles and Docker Compose setup for separate local API and frontend containers.
+- Added bonus documentation for CI/CD, monitoring/logging, distributed local demo, and evidence collection.
+
+**Architecture impact:**
+- Preserved the existing layered dependency direction.
+- Kept observability utility code in Infrastructure and HTTP wiring in the server/bootstrap boundary.
+- Added local distributed runtime evidence without requiring AWS/Azure/GCP billing.
+
+**Files changed:**
+- `.github/workflows/ci.yml`
+- `package.json`
+- `scripts/check-env-safety.js`
+- `scripts/check-architecture.js`
+- `backend/infrastructure/utils/logger.js`
+- `backend/server.js`
+- `frontend/assets/js/config.js`
+- `Dockerfile.api`
+- `Dockerfile.frontend`
+- `docker-compose.yml`
+- `docker/frontend/default.conf`
+- `docs/bonus/BONUS_READINESS.md`
+- `docs/bonus/CI_CD.md`
+- `docs/bonus/OBSERVABILITY.md`
+- `docs/bonus/DISTRIBUTED_LOCAL.md`
+- `test/repository-phase2-contract.test.js`
+- `docs/ai/PHASE_STATUS.md`
+- `docs/ai/IMPLEMENTATION_LOG.md`
+
+**Verification:**
+- Ran `npm run ci`; env safety, architecture checks, and all 9 tests passed.
+- Smoke-tested `/api/health` on a temporary local server and received `status: ok`.
+- Captured structured JSON logs for `server_started` and `http_request`.
+- Verified Git status keeps `local.env` ignored.
+- Checked Docker availability; Docker is not installed in this local environment, so Compose build/run verification remains pending on a machine with Docker Desktop.
+
+**Remaining notes:**
+- Cloud provider deployment remains pending until the team gets AWS/Azure/GCP billing or student verification access.
+
