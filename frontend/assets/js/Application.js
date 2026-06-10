@@ -639,6 +639,27 @@ class Application {
     }
 
     /**
+     * Toggle mobile navigation menu.
+     */
+    toggleMobileMenu() {
+        if (navbarManager && typeof navbarManager.toggleMobileMenu === 'function') {
+            navbarManager.toggleMobileMenu();
+            return;
+        }
+
+        const navCollapse = document.querySelector('.navbar-collapse');
+        if (!navCollapse) return;
+
+        if (window.bootstrap?.Collapse) {
+            const collapse = bootstrap.Collapse.getOrCreateInstance(navCollapse, { toggle: false });
+            collapse.toggle();
+            return;
+        }
+
+        navCollapse.classList.toggle('show');
+    }
+
+    /**
      * Handle search input (for auto-complete)
      */
     async handleSearchInput(query) {

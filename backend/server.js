@@ -38,6 +38,63 @@ import paymentRoutes from './presentation/routes/payments.js';
 // Import Middleware
 import corsMiddleware from './presentation/middleware/cors.js';
 
+function jsString(value) {
+    return JSON.stringify(String(value || ''));
+}
+
+function generateFrontendConfigScript() {
+    const supabaseUrl = process.env.SUPABASE_URL || '';
+    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || '';
+    const googleClientId = process.env.GOOGLE_CLIENT_ID || '';
+    const apiBaseUrl = process.env.API_BASE_URL || process.env.FRONTEND_URL || '';
+    const appName = process.env.APP_NAME || 'Snevo';
+    const appVersion = process.env.APP_VERSION || '1.0.0';
+    const environment = process.env.NODE_ENV || 'production';
+
+    return `/**
+ * Frontend Configuration
+ * Generated at runtime from server environment variables.
+ */
+window.SUPABASE_URL = ${jsString(supabaseUrl)};
+window.SUPABASE_ANON_KEY = ${jsString(supabaseAnonKey)};
+window.API_BASE_URL = ${jsString(apiBaseUrl)};
+window.GOOGLE_CLIENT_ID = ${jsString(googleClientId)};
+
+const isValidSupabaseUrl = Boolean(
+  window.SUPABASE_URL &&
+  !window.SUPABASE_URL.includes('your-project-id') &&
+  window.SUPABASE_URL.startsWith('https://')
+);
+const isValidSupabaseKey = Boolean(
+  window.SUPABASE_ANON_KEY &&
+  window.SUPABASE_ANON_KEY !== 'your-anon-key' &&
+  window.SUPABASE_ANON_KEY.length > 50
+);
+const isValidGoogleClientId = Boolean(
+  window.GOOGLE_CLIENT_ID &&
+  window.GOOGLE_CLIENT_ID.includes('.apps.googleusercontent.com')
+);
+
+window.APP_CONFIG = {
+  name: ${jsString(appName)},
+  version: ${jsString(appVersion)},
+  environment: ${jsString(environment)},
+  buildTime: ${jsString(new Date().toISOString())},
+  features: {
+    googleAuth: isValidGoogleClientId && isValidSupabaseUrl && isValidSupabaseKey,
+    emailVerification: isValidSupabaseUrl && isValidSupabaseKey,
+    passwordReset: isValidSupabaseUrl && isValidSupabaseKey,
+    supabaseAuth: isValidSupabaseUrl && isValidSupabaseKey
+  },
+  validation: {
+    supabaseUrl: isValidSupabaseUrl,
+    supabaseKey: isValidSupabaseKey,
+    googleClientId: isValidGoogleClientId
+  }
+};
+`;
+}
+
 class Server {
     constructor() {
         this.port = Number(process.env.PORT) || 3001;
@@ -244,6 +301,15 @@ class Server {
                     environment: process.env.NODE_ENV || 'development',
                     timestamp: new Date().toISOString()
                 });
+                return;
+            }
+
+            if (pathname === '/assets/js/config.js') {
+                res.writeHead(200, {
+                    'Content-Type': 'application/javascript; charset=utf-8',
+                    'Cache-Control': 'no-store'
+                });
+                res.end(generateFrontendConfigScript());
                 return;
             }
 
