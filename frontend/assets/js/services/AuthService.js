@@ -14,6 +14,29 @@ class AuthService {
   }
 
   /**
+   * Normalize Supabase auth responses so UI code can use a consistent shape.
+   */
+  createAuthResult({ data = null, error = null, message = null, extra = {} } = {}) {
+    if (error) {
+      return {
+        success: false,
+        data,
+        error: error.message || String(error),
+        rawError: error,
+        ...extra,
+      };
+    }
+
+    return {
+      success: true,
+      data,
+      error: null,
+      message,
+      ...extra,
+    };
+  }
+
+  /**
    * Check if there's a stored session in localStorage
    */
   hasStoredSession() {
@@ -228,16 +251,15 @@ class AuthService {
   async loginWithGoogle() {
     if (!this.supabase) {
       console.error("AuthService not initialized");
-      return { error: { message: "Authentication service not available" } };
+      return this.createAuthResult({
+        error: { message: "Authentication service not available" },
+      });
     }
 
     try {
       // Build redirect URL - must be full URL with protocol
       const redirectUrl = `${window.location.origin}/`;
-      console.log('🔐 Google OAuth redirect URL:', redirectUrl);
-      console.log('📍 Current location origin:', window.location.origin);
-      console.log('📍 Current location hostname:', window.location.hostname);
-      
+
       const { data, error } = await this.supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
@@ -251,13 +273,17 @@ class AuthService {
 
       if (error) {
         console.error("Google login error:", error);
-        return { error };
+        return this.createAuthResult({ data, error });
       }
 
-      return { data };
+      return this.createAuthResult({
+        data,
+        message: "Redirecting to Google...",
+        extra: { redirecting: true },
+      });
     } catch (error) {
       console.error("Google login failed:", error);
-      return { error: { message: error.message } };
+      return this.createAuthResult({ error });
     }
   }
 
@@ -266,7 +292,9 @@ class AuthService {
    */
   async loginWithEmail(email, password) {
     if (!this.supabase) {
-      return { error: { message: "Authentication service not available" } };
+      return this.createAuthResult({
+        error: { message: "Authentication service not available" },
+      });
     }
 
     try {
@@ -275,9 +303,9 @@ class AuthService {
         password,
       });
 
-      return { data, error };
+      return this.createAuthResult({ data, error });
     } catch (error) {
-      return { error: { message: error.message } };
+      return this.createAuthResult({ error });
     }
   }
 
@@ -286,7 +314,9 @@ class AuthService {
    */
   async register(email, password, userData = {}) {
     if (!this.supabase) {
-      return { error: { message: "Authentication service not available" } };
+      return this.createAuthResult({
+        error: { message: "Authentication service not available" },
+      });
     }
 
     try {
@@ -303,9 +333,17 @@ class AuthService {
         },
       });
 
-      return { data, error };
+      const requiresVerification = Boolean(data?.user && !data?.session);
+      return this.createAuthResult({
+        data,
+        error,
+        message: requiresVerification
+          ? "Account created! Please check your email for verification."
+          : "Account created successfully.",
+        extra: { requiresVerification },
+      });
     } catch (error) {
-      return { error: { message: error.message } };
+      return this.createAuthResult({ error });
     }
   }
 
@@ -381,7 +419,9 @@ class AuthService {
    */
   async resetPassword(email) {
     if (!this.supabase) {
-      return { error: { message: "Authentication service not available" } };
+      return this.createAuthResult({
+        error: { message: "Authentication service not available" },
+      });
     }
 
     try {
@@ -391,9 +431,9 @@ class AuthService {
           redirectTo: `${window.location.origin}/pages/reset-password.html`,
         }
       );
-      return { data, error };
+      return this.createAuthResult({ data, error });
     } catch (error) {
-      return { error: { message: error.message } };
+      return this.createAuthResult({ error });
     }
   }
 
@@ -402,16 +442,18 @@ class AuthService {
    */
   async updateProfile(updates) {
     if (!this.supabase) {
-      return { error: { message: "Authentication service not available" } };
+      return this.createAuthResult({
+        error: { message: "Authentication service not available" },
+      });
     }
 
     try {
       const { data, error } = await this.supabase.auth.updateUser({
         data: updates,
       });
-      return { data, error };
+      return this.createAuthResult({ data, error });
     } catch (error) {
-      return { error: { message: error.message } };
+      return this.createAuthResult({ error });
     }
   }
 

@@ -105,13 +105,13 @@ class LoginModal {
             try {
                 // Use AuthService directly for simpler, faster auth
                 if (window.authService) {
-                    const { error } = await window.authService.loginWithGoogle();
-                    if (error) {
-                        console.error('Google login failed:', error);
+                    const result = await window.authService.loginWithGoogle();
+                    if (!result.success) {
+                        console.error('Google login failed:', result.rawError || result.error);
                         if (window.showToast) {
-                            window.showToast(error.message || 'Google login failed', 'error');
+                            window.showToast(result.error || 'Google login failed', 'error');
                         } else {
-                            alert('Login failed: ' + error.message);
+                            alert('Login failed: ' + (result.error || 'Google login failed'));
                         }
                     }
                 } else {

@@ -172,17 +172,17 @@ Nhom bang chinh:
 
 Neu Supabase Auth can trigger/profile tu dong, hay dam bao cac trigger/policy trong `schema.sql` da chay thanh cong.
 
-## Tao frontend config
+## Frontend runtime config
 
-Frontend doc config tu `frontend/assets/js/config.js`. File nay duoc sinh tu `.env`.
+Frontend doc config tu `/assets/js/config.js` khi chay qua backend server. Server sinh file nay luc request dua tren process env, `.env`, hoac `local.env`; khong can ghi de file source `frontend/assets/js/config.js`.
 
-Chay:
+Co the kiem tra config local bang:
 
 ```bash
 npm run dev:config
 ```
 
-Lenh `npm run dev` cung tu dong chay `dev:config` truoc khi start server.
+Lenh nay chi inspect config va khong sua file nao.
 
 ## Chay ung dung local
 
@@ -279,8 +279,8 @@ Trang thai hien tai: test runner chay duoc, nhung repo dang co 1 contract test f
 
 | Lenh | Chuc nang |
 |---|---|
-| `npm run dev` | Sinh frontend config va chay server voi `node --watch` |
-| `npm run dev:config` | Sinh `frontend/assets/js/config.js` tu `.env` |
+| `npm run dev` | Chay server voi `node --watch`; frontend config duoc serve runtime |
+| `npm run dev:config` | Kiem tra config local tu process env, `.env`, hoac `local.env`; khong ghi file |
 | `npm start` | Chay server Node.js |
 | `npm run build:frontend` | Copy frontend vao `build/frontend` va inject config production |
 | `npm run build` | Chay build script tong, hien con TODO |
@@ -315,13 +315,13 @@ Sau do dam bao da chay `schema.sql` tren Supabase.
 
 ### 2. Frontend goi sai API URL
 
-Chay lai:
+Kiem tra config local:
 
 ```bash
 npm run dev:config
 ```
 
-Sau do reload browser. File can duoc cap nhat la `frontend/assets/js/config.js`.
+Sau do restart `npm run dev` va reload browser. Runtime config duoc lay tu `/assets/js/config.js`, khong ghi de file source.
 
 ### 3. Port 3001 bi chiem
 
@@ -350,7 +350,7 @@ Kiem tra:
 
 - Khong commit file `.env`.
 - Khong dua `SUPABASE_SERVICE_ROLE_KEY` len frontend.
-- File `frontend/assets/js/config.js` co the chua anon key sau khi generate; anon key co the public, nhung service role key thi khong.
+- File `frontend/assets/js/config.js` trong source chi giu safe defaults; config that duoc serve runtime tu backend.
 - Khi chia se source code, chi chia se `.env.example`.
 
 ## Tai lieu lien quan

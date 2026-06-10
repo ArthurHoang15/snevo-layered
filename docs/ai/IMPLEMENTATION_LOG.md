@@ -613,3 +613,85 @@ Append one entry after each completed implementation task that changes code or d
 - Verified runtime `/assets/js/config.js` contains valid public Supabase and Google OAuth settings.
 - Verified runtime frontend config does not expose `SUPABASE_SERVICE_ROLE_KEY` or `GOOGLE_CLIENT_SECRET`.
 
+## 2026-06-10 - Keep Frontend Config Source Clean
+
+**Actor:** AI-assisted
+
+**Prompt summary:** Running local config tooling keeps dirtying the tracked `frontend/assets/js/config.js` file.
+
+**Implemented:**
+- Converted `scripts/dev-config.js` from a source-file generator into a read-only local configuration inspector.
+- Kept frontend runtime config generation in `backend/server.js` at `/assets/js/config.js`.
+- Updated README and structure documentation to remove stale instructions that told developers to rewrite tracked config.
+
+**Architecture impact:**
+- No layer dependency changes.
+- Preserves frontend behavior while keeping source-controlled config on safe defaults.
+
+**Files changed:**
+- `scripts/dev-config.js`
+- `README.md`
+- `STRUCTURE.md`
+- `docs/ai/IMPLEMENTATION_LOG.md`
+
+**Verification:**
+- Ran `npm run dev:config`; it reported masked config values and did not modify `frontend/assets/js/config.js`.
+- Ran `npm run ci`; env safety, architecture checks, and all 9 tests passed.
+- Verified Git status only contains the intended script/docs changes plus ignored `local.env` and `node_modules/`.
+
+## 2026-06-10 - AWS Elastic Beanstalk CD Workflow
+
+**Actor:** AI-assisted
+
+**Prompt summary:** AWS deployment succeeded manually, but GitHub Actions only runs CI and does not run CD.
+
+**Implemented:**
+- Added `.github/workflows/aws-eb-deploy.yml` for AWS Elastic Beanstalk deployment.
+- Configured the CD workflow to run quality gates before deploying.
+- Configured deploy triggers for pushes to `main` and manual `workflow_dispatch` runs.
+- Packaged deployments using `git archive` so ignored local files such as `.env`, `local.env`, and `node_modules/` are not uploaded.
+- Documented required GitHub repository secrets and AWS CD evidence for the bonus report.
+
+**Architecture impact:**
+- No backend layer dependency changes.
+- CI/CD changes are isolated to GitHub Actions and documentation.
+
+**Files changed:**
+- `.github/workflows/aws-eb-deploy.yml`
+- `docs/bonus/CI_CD.md`
+- `docs/bonus/BONUS_READINESS.md`
+- `docs/ai/PHASE_STATUS.md`
+- `docs/ai/IMPLEMENTATION_LOG.md`
+
+**Verification:**
+- Ran `npm run ci`; env safety, architecture checks, and all 9 tests passed.
+- Ran `git diff --check`; no whitespace errors were reported.
+- Confirmed CD deployment itself requires GitHub repository secrets and must be verified in GitHub Actions after secrets are configured.
+
+## 2026-06-10 - Google Login Result Shape Fix
+
+**Actor:** AI-assisted
+
+**Prompt summary:** Google login succeeds, but the UI still shows a failed-login toast/tooltip.
+
+**Implemented:**
+- Normalized frontend `AuthService` auth responses to include `success`, `data`, `error`, and `rawError`.
+- Returned `success: true` for successful Google OAuth redirects so UI handlers do not show false failure messages.
+- Updated the standalone login modal to consume the normalized result shape.
+- Added frontend auth result tests covering successful Google OAuth redirect and provider-error cases.
+
+**Architecture impact:**
+- Frontend-only change.
+- No backend layer dependency changes.
+- Preserved existing Supabase OAuth behavior and API endpoints.
+
+**Files changed:**
+- `frontend/assets/js/services/AuthService.js`
+- `frontend/assets/js/LoginModal.js`
+- `test/frontend-auth-result.test.js`
+- `docs/ai/IMPLEMENTATION_LOG.md`
+
+**Verification:**
+- Ran `npm run ci`; env safety, architecture checks, and all 11 tests passed.
+- Added frontend auth tests for Google OAuth success and failure result shapes.
+

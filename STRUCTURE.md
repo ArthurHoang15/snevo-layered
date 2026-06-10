@@ -97,7 +97,7 @@ snevo-layered/
 ├── config/                            # ⚙️ Compatibility wrappers for legacy system compatibility
 │   ├── constants.js
 │   └── supabase.js
-├── scripts/                           # 📜 Seeding, configuration generators, build tools
+├── scripts/                           # 📜 Seeding, config inspection, build tools
 │   ├── build.js
 │   ├── seed.js
 │   ├── dev-config.js
